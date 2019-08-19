@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[TextView实现类型微信的全文功能]]></title>
+    <url>%2F2018%2F11%2F22%2FTextView%E5%AE%9E%E7%8E%B0%E7%B1%BB%E5%9E%8B%E5%BE%AE%E4%BF%A1%E7%9A%84%E5%85%A8%E6%96%87%E5%8A%9F%E8%83%BD%2F</url>
+    <content type="text"><![CDATA[在最近的项目中，有个列表需要展示类似微信朋友圈的全文功能，点击全文展示所有的内容，点击隐藏全文，展示原本的文本。 设置TextView最多只能展示5行，超过5行的时候展示省略号（TextView设置最大行数的同时支持Span属性的一些坑，已经在LinkMovementMethod那些坑中描述）。我们只要知道当前展示的文字长度超过了5行，就可以知道是否要展示全文按钮，可以使用addOnGlobalLayoutListener（）在TextView绘制完成后进行展示文字长度的判断，我选择自定义TextView，在onMeasure（）中进行判断。 一开始在网上搜罗了一些方法后，感觉还挺简单的，码上代码： 12345678910111213141516171819202122232425public class SpannableTextView extends TextView &#123; private TextViewShowCallback callback; public SpannableTextView(Context context, @Nullable AttributeSet attrs) &#123; super(context, attrs); &#125; @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) &#123; super.onMeasure(widthMeasureSpec, heightMeasureSpec); Layout mainLayout = getLayout(); int lineCount = mainLayout.getLineCount(); // 获取当前TextView展示的行数 // mainLayout.getLineEnd(lineCount - 1)获取当前TextView展示的最后一个字符的位置 callback.configMoreText(lineCount, mainLayout.getLineEnd(lineCount - 1)); &#125; public void setCallback(TextViewShowCallback callback) &#123; this.callback = callback; &#125; // 一个callback来告诉textview的父view展示了多少，当前行末位置 public interface TextViewShowCallback &#123; void configMoreText(int lineCount, long lineEnd); &#125;&#125; 在使用了这个TextView的RecyclerView的adapter里面 123456789101112131415161718linkText.setCallback(new SpannableTextView.TextViewShowCallback() &#123; @Override public void configMoreText(int lineCount, long lineEnd) &#123; // 不展开的时候最多只有5行，少于5行不展示加载更多，等于5行才判断是否要展示 if (lineCount == 5) &#123; // 文字已经全部展示不需要显示下边展示更多按钮 if (msg.length() &lt;= lineEnd) &#123; return; &#125; linkMore.setVisibility(View.VISIBLE); linkMore.setText("全文"); &#125; else if (lineCount &gt; 5) &#123; // 展开后才会超过五行 linkMore.setVisibility(View.VISIBLE); linkMore.setText("收起"); &#125; &#125;&#125;); 跑了一下，看到全文和收起可以正常使用了，美滋滋的以为so easy啊。然鹅，过不了多久就收到qa的bug邮件，说她的文本都没有全文按钮。不能啊，我这明明好好的呢，一定是见鬼了（我的代码不存在bug的，不接受反驳╭(๑¯д¯๑)╮）。多拿了几个机型跑了一下，发现Android 8.0以上的机器都不能正常显示全文按钮，跟debug后发现是lineEnd的值不准，返回的是全文的长度。翻google无果后，就想还是得靠自己，开始翻源码，然后！！！就发现了一个大坑。。 在sdk 27的源码中，getLineEnd（）源码如下： 12345678910111213/** * Return the text offset after the last character on the specified line. */public final int getLineEnd(int line) &#123; return getLineStart(line + 1);&#125;/** * Return the text offset of the beginning of the specified line ( * 0&amp;hellip;getLineCount()). If the specified line is equal to the line * count, returns the length of the text. */public abstract int getLineStart(int line); 看到getLineStart上面写着，如果参数line和目前TextView的line一致的话，就返回文本的全部长度，我整个人陷入了沉思。。。这么存在的一个方法有什么用啊，什么用。。。为什么Android 5.0可以用啊，可以用。。。都这样了，那只能自己想办法计算了，最后计算方法如下： 123456789101112131415161718192021222324252627282930313233343536373839404142434445public class SpannableTextView extends TextView &#123; private TextViewShowCallback callback; public SpannableTextView(Context context, @Nullable AttributeSet attrs) &#123; super(context, attrs); &#125; @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) &#123; super.onMeasure(widthMeasureSpec, heightMeasureSpec); Layout mainLayout = getLayout(); int lineCount = mainLayout.getLineCount(); int leftLineWidth = 0; // 第五行的文本宽度 TextPaint textPaint = getPaint(); // 文字刚好等于5行的情况，需要另外计算已经显示的文字长度 if (lineCount == getMaxLines()) &#123; // 第四行末尾的文字长度 int lineEnd = mainLayout.getLineEnd(lineCount - 2); // 剩下的文本 String leftStr = getText().subSequence(lineEnd, getText().length()).toString(); int i = 0; for (; i &lt; leftStr.length(); i++) &#123; // 获取每个字符的宽度，单位为pixel leftLineWidth += textPaint.measureText(leftStr, i, i + 1); // 如果超过TextView的宽度，说明第五行展示完了 if (leftLineWidth &gt; getMeasuredWidth()) &#123; break; &#125; &#125; // 加上第五行展示的字符个数，得到最终的lineEnd lineEnd += i; callback.configMoreText(lineCount, lineEnd); return; &#125; callback.configMoreText(lineCount, mainLayout.getLineEnd(lineCount - 1)); &#125; public void setCallback(TextViewShowCallback callback) &#123; this.callback = callback; &#125; public interface TextViewShowCallback &#123; void configMoreText(int lineCount, long lineEnd); &#125;&#125; 在Android 5.0 7.0 8.0都跑了一下，这下真的可以正常展示。。。 写代码一分钟，解bug一天。。。╮（﹀＿﹀）╭ 最后附上在RecyclerView中的item里，点击全文和收起的实现代码： 12345678910111213141516171819202122232425262728293031// 标志展开的item的位置int opened = -1;// 在相关item的初始化位置// 是否是已经展开的if (opened == position) &#123; linkText.setMaxLines(Integer.MAX_VALUE); linkText.setEllipsize(null);&#125; else &#123; linkText.setMaxLines(5); linkText.setEllipsize(TextUtils.TruncateAt.END);&#125;// 全文或者收起按钮点击监听linkMore.setOnClickListener(new View.OnClickListener() &#123; @Override public void onClick(View v) &#123; if (opened == getAdapterPosition()) &#123; // 已经展开，就关闭 opened = -1; notifyItemChanged(getAdapterPosition()); &#125; else &#123; int oldOpened = opened; opened = getAdapterPosition(); notifyItemChanged(oldOpened); notifyItemChanged(opened); &#125; &#125;&#125;);// 若需要自己修改itemchanged的动画时长等linkRecyclerview.getItemAnimator().setChangeDuration(300);]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[LinkMovementMethod那些坑]]></title>
+    <url>%2F2018%2F11%2F21%2FLinkMovementMethod%2F</url>
+    <content type="text"><![CDATA[最近一个需求中，需要对Textview中的文本url进行高亮显示，并自定义点击操作。按照所学知识，开始码代码。 按照交互要求，Textview最多五行，自动显示省略号: 12345678910111213&lt;TextView android:id="@+id/link_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="18dp" android:layout_marginTop="10dp" android:layout_marginRight="18dp" android:ellipsize="end" android:lineSpacingExtra="2dp" android:maxLines="5" android:singleLine="false" android:textColor="@color/c_2_new" android:textSize="@dimen/f_2" /&gt; 截取文本中的url字段，设置url的span 123456789// ...if (JudgmentUtil.isNotEmpty(url)) &#123; textUrlMsg.append(url).append(" "); // 自定义span UrlSpanListener clickableSpan = new UrlSpanListener(context, url); textUrlMsg.setSpan(clickableSpan, startIndex, textUrlMsg.length(),Spannable.SPAN_INCLUSIVE_EXCLUSIVE);&#125;// ... 123456789101112131415161718192021public class UrlSpanListener extends ClickableSpan &#123; private String mUrl; // 当前点击的链接 private final Context context; public UrlSpanListener(Context context, String url) &#123; this.context = context; mUrl = url; &#125; @Override public void onClick(@NonNull View widget) &#123; // 自定义点击操作 &#125; @Override public void updateDrawState(TextPaint ds) &#123; super.updateDrawState(ds); // 设置颜色等span属性 ds.setColor(context.getResources().getColor(R.color.c_1)); &#125;&#125; 给Textview设置文本，并设置movementmethod使span点击操作可以执行。 123TextView linkText = itemView.findViewById(R.id.link_text);linkText.setMovementMethod(LinkMovementMethod.getInstance());linkText.setText(textUrlMsg); 写完代码，美滋滋等待build，想着分分钟解决了需求。然鹅，事情并没有想象的那么简单！！！跑完后发现，textview中的文本，在超过五行后自动省略，但是，并没有显示省略号，文本还会莫名出现向上动了半截字的画面！！！向下面一样 在问遍组内大佬，百度半天，谷歌半天没有结果后（ps：谷歌上说，用SpannableStringBuilder文本，会导致TextView算不准什么时候显示省略号，要自己截取文本添加省略号来实现，这都是骗！人！的！），一个大佬偶然说，你这textview好像就是向上滚动了，我记得textview有个设置不可滚动的属性，你看看设为none后可不可以用。听完火速打来xml开始寻找这个属性，寻找一圈后没找到大佬说的属性，但是给了我灵感，遂谷歌如何设置textview可滚动，谷歌说textview本身自带滚动，若要实现滚动效果，给textview设置movementmethod即可。 12// 设置后textview便可以滚动linkText.setMovementMethod(ScrollingMovementMethod.getInstance()); 再顺藤摸瓜看了一眼，LinkMovementMethod继承自ScrollingMovementMethod，好了，自此知道了问题所在。 因为LinkMovementMethod继承自ScrollingMovementMethod，所以也继承了滚动属性，textview中的文本若可以滚动，便不会自动省略和显示省略号，又因为需求中的textview外层是recyclerview，大部分的滚动监听都被recyclerview捕获，个别触发了textview的滚动导致个别textview文字向上滚动了一点。去掉linkText.setMovementMethod(LinkMovementMethod.getInstance());后，文字可以正常省略了，也有省略号了，也不会自己滚动了，然鹅，span就不能点击了。既然这样，只好自己做点击事件了。 1234567891011121314151617181920212223242526272829303132333435363738394041424344// textview点击监听linkText.setOnTouchListener(new View.OnTouchListener() &#123; long startTime = 0; @Override public boolean onTouch(View v, MotionEvent event) &#123; int action = event.getAction(); if (action == MotionEvent.ACTION_DOWN) &#123; startTime = System.currentTimeMillis(); &#125; TextView tv = (TextView) v; CharSequence text = tv.getText(); if (text instanceof SpannedString) &#123; if (action == MotionEvent.ACTION_UP) &#123; // 避免长按和点击冲突，如果超过300毫秒，认为是在长按，不执行点击操作 if (System.currentTimeMillis() - startTime &gt; 300) &#123; return false; &#125; int x = (int) event.getX(); int y = (int) event.getY(); x -= tv.getTotalPaddingLeft(); y -= tv.getTotalPaddingTop(); x += tv.getScrollX(); y += tv.getScrollY(); Layout layout = tv.getLayout(); int line = layout.getLineForVertical(y); int off = layout.getOffsetForHorizontal(line, x); UrlSpanListener[] link = ((SpannedString) text).getSpans(off, off, UrlSpanListener.class); if (link.length != 0) &#123; link[0].onClick(tv); return true; &#125; &#125; &#125; return false; &#125; &#125;); 自此，问题完美解决，需求完美实现~(˘▾˘)~]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Kotlin实战4-while和for循环]]></title>
+    <url>%2F2018%2F10%2F09%2FKotlin%E5%AE%9E%E6%88%984-while%E5%92%8Cfor%E5%BE%AA%E7%8E%AF%2F</url>
+    <content type="text"><![CDATA[while循环Kotlin的while循环和do-while循环的语法和java一样 12345678// 当condition为true时执行while (condition) &#123; // ...&#125;// 第一次无条件执行，后当condition为true时执行do &#123; // ...&#125; while(condition) for循环区间和数列在Kotlin中，没有传统的JAVA for循环，为了替代这种最常见的for循环，Kotlin使用了区间的概念。 区间本质上是两个值的间隔，这两个值通常是数字，一个起始值，一个结束值。使用 .. 运算符表示区间： 1val oneToTen = 1 .. 10 // ..是包含结束的封闭区间，包含10 使用when实现Fizz-Buzz游戏 1234567891011fun fizzBuzz(i: Int) = when &#123; i % 15 == 0 -&gt; "FizzBuzz " i % 3 ==0 -&gt; "Fizz " i % 5 == 0 -&gt; "Buzz " else -&gt; "$i "&#125;for(i in 1..100) &#123; print(fizzBuzz(i))&#125;// 1 2 Fizz 3 4 Buzz .... 我们修改规则，从100开始倒计数并且只计算偶数 1234for(i in 100 downTo 1 setp 2) &#123; print(fizzBuzz(i))&#125;// Buzz 98 Fizz 94 92 FizzBuzz .... 因为..语法创建的始终是包含结束值得闭区间，若需要不包含结束值的半闭合区间，可以使用until函数，例如循环for(i in 0 until size)，等同于for(i in 0 .. size -1)，但前者更加方便，意图更加清晰。 迭代map12345678val binaryReps = TreeMap&lt;Char, String&gt;() // 字符的二进制mapfor(c in 'A'..'F' ) &#123; val binary = Integer.toBinaryString(c.toInt()) //asc转二进制 binaryReps[c] = binary // 根据键c把值存到map中&#125;for((letter, binary) in binaryReps) &#123; // 迭代map，把键和值赋给变量 println('$letter = $binary')&#125; 使用”in”检查集合和区间的成员使用in检查一个值是否在区间中，或者使用!in检查一个值是否不在区间中 12fun isLetter(c: Char) = c in 'a'..'f'|| c in 'A'..'F'fun isNotDigital(c: Char) = c !in '0'..'9']]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Kotlin实战3-枚举和when]]></title>
+    <url>%2F2018%2F07%2F06%2FKotlin%E5%AE%9E%E6%88%983-%E6%9E%9A%E4%B8%BE%E5%92%8Cwhen%2F</url>
+    <content type="text"><![CDATA[声明枚举类声明一个简单的枚举类123enum class Food &#123; FRUID, WATER, NOODLE&#125; Kotlin用了enum class两个关键字来声明枚举类，而java只用了enum一个关键字。在Kotlin中，enum是一个软关键字 ：只有当它出现在class前面时才有特殊的意义，在其他地方可以把它当成普通的名称使用。 声明一个带属性的枚举类123456789enum class Color(val r: Int, val g: Int, val b: Int) &#123; // 声明枚举常量的属性 // 在每个常量创建的时候指定属性值 RED(255, 0, 0), ORANGE(255, 165, 0), YELLOW(255, 255, 0), GREEN(0, 255, 0), BLUE(0, 0, 255),INDIGO(75, 0, 130), VIOLET(238, 130, 238); // 给枚举类定义一个方法 fun rgb() = (r * 255 + g) * 255 + b&#125;// 输出&gt;&gt;&gt; println(Color.BLUE.rgb())&gt;&gt;&gt; 255 如果要在枚举类中定义任何方法，都要使用分号 把枚举常量列表和方法定义分开，这是Kotlin语法中唯一必须使用分号的地方。 使用”when”处理枚举类在Kotlin中，与java的switch相对应的结构，是when。和if相似，when是一个有返回值的表达式，因此可以写一个直接返回when表达式的表达式体函数。 1234567891011121314// 直接返回when表达式fun getMnemonic(color: Color) = when (color) &#123; Color.RED -&gt; "Richard" Color.ORANGE -&gt; "Of" Color.YELLOW -&gt; "York" Color.GREEN -&gt; "Gave" Color.BLUE -&gt; "Battle" Color.INDIGO -&gt; "In" Color.VIOLET -&gt; "Vain" &#125;// 输出&gt;&gt;&gt; println(getMnemonic(Color.BLUE))&gt;&gt;&gt; Battle 和java不一样的是，不需要在每个分支都写上break语句，如果匹配成功，只有对应的分支会执行，也可以把多个分支的值合并到同一个分支，只需要用逗号隔开这些值。 123456789fun getWarmth(color: Color) = when (color) &#123; Color.RED, Color.ORANGE, Color.YELLOW -&gt; "warm" Color.GREEN -&gt; "neutral" Color.BLUE, Color.INDIGO, Color.VIOLET -&gt; "cold" &#125;// 输出&gt;&gt;&gt; println(getWarmth(Color.ORANGE))&gt;&gt;&gt; warm 这些例子使用了枚举常量的完整名称，即指定了枚举类的名称Color，可以通过导入这些常量来简化代码。 123456fun getWarmth(color: Color) = when (color) &#123; RED, ORANGE, YELLOW -&gt; "warm" GREEN -&gt; "neutal" BLUE, INDIGO, VIOLET -&gt; "cold" &#125; 在”when”结构中使用任意对象Kotlin中的when结构比java中的switch要强大得多。switch要求必须使用常量（枚举常量，字符串或者数字字面量）作为分支条件，when允许使用任意对象。 12345678910fun mix(c1: Color, c2: Color) = when (setOf(c1, c2)) &#123; setOf(RED, YELLOW) -&gt; ORANGE setOf(YELLOW, BLUE) -&gt; GREEN setOf(BLUE, VIOLET) -&gt; INDIGO else -&gt; throw Exception("Dirty color") &#125;// 输出&gt;&gt;&gt; println(mix(VIOLET, BLUE).ordinal)&gt;&gt;&gt; INDIGO Kotlin标准函数库中有一个setOf函数可以创建出一个Set，它会包含所有指定为函数实参的对象。set集合的条目顺序并不重要，只要两个set包含一样的条目，它们就是相等的。 使用不带参数的”when”上面的方法，在每次调用这个函数的时候，都会创建一些Set实例，仅仅用来检查两种给定的颜色是否和另外的颜色匹配，如果这个函数调用频繁，可以使用另外一种方式，来避免创建额外的垃圾对象。代码可读性会变差，但是能达到更好的性能。 1234567fun mixOptimized(c1: Color, c2: Color) = when &#123; //没有实参传给when (c1 == RED &amp;&amp; c2 == YELLOW) || (c1 == YELLOW &amp;&amp; c2 == RED) -&gt; ORANGE (c1 == YELLOW &amp;&amp; c2 == BLUE) || (c1 == BLUE &amp;&amp; c2 == YELLOW) -&gt; GREEN (c1 == BLUE &amp;&amp; c2 == VIOLET) || (c2 == VIOLET &amp;&amp; c1 == BLUE) -&gt; INDIGO else -&gt; throw Exception("Dirty color") &#125;]]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[2018-07-05-随记]]></title>
+    <url>%2F2018%2F07%2F05%2Fnote%2F</url>
+    <content type="text"><![CDATA[曾经说，喜欢到想娶你的人，如今已经有另外的心上人。因为自己的任性，错过了一个本很好的人。要说后悔，肯定是有的，但这句话，绝对不会说出来的。既然他现在过得很好，祝福他就好了。]]></content>
+      <categories>
+        <category>Life</category>
+      </categories>
+      <tags>
+        <tag>Life</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[2018-07-03-随记]]></title>
+    <url>%2F2018%2F07%2F03%2Fnote%2F</url>
+    <content type="text"><![CDATA[如果以后再也见不到你，那么祝你早安、午安、晚安。 Good morning, and in case I don’t see ya, good afternoon, good evening, and good night. ​ ——《楚门的世界》]]></content>
+      <categories>
+        <category>Life</category>
+      </categories>
+      <tags>
+        <tag>Life</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[2018-06-30-随记]]></title>
+    <url>%2F2018%2F06%2F30%2Fnote%2F</url>
+    <content type="text"><![CDATA[莫名的喜欢《哈儿的移动城堡》，无论看多少遍，内心总是被莫名的触动，可能是因为苏菲的乐观，可能是因为哈儿的悲观。]]></content>
+      <categories>
+        <category>Life</category>
+      </categories>
+      <tags>
+        <tag>Life</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Collections.sort()的使用]]></title>
+    <url>%2F2018%2F05%2F18%2FCollections.sort()%E7%9A%84%E4%BD%BF%E7%94%A8%2F</url>
+    <content type="text"><![CDATA[String、Integer等基本类型已经实现了Comparable接口，可以直接使用Collections.sort()进行排序。 12345static List&lt;Integer&gt; intList = Arrays.asList(2, 3, 1);// ...Collections.sort(intList);// 输出 1,2,3 默认为正序排序，若想自定义排序，可以自己实现Comparator接口的compare方法。 1234567891011Coolections.sort(intList, new Comparator&lt;Integer&gt;() &#123; @Override public int compare(Integer o1, Integer 02) &#123; // 返回值为int，大于0表示正序，小于0表示逆序 return o1-o1; &#125; &#125;);// 输出 3,2,1 接下来是自定义类的排序，自定义一个类： 123456789101112131415161718192021222324252627public class Emp &#123; private int empno; private String ename; public int getEmpno() &#123; return empno; &#125; public void setEmpno(int empno) &#123; this.empno = empno; &#125; public String getEname() &#123; return ename; &#125; public void setEname(String ename) &#123; this.ename = ename; &#125; public Emp(int empno, String ename) &#123; super(); this.empno = empno; this.ename = ename; &#125; @Override public String toString() &#123; return "empno:\t"+empno+"\tename:\t"+ename; &#125;&#125; 首先直接使用Collections.sort()进行排序 12345678910static List&lt;Emp&gt; empList; static &#123; Emp emp1 = new Emp(2,"Guan YunChang"); Emp emp2 = new Emp(3,"Zhang Fei"); Emp emp3 = new Emp(1,"Liu Bei"); empList = Arrays.asList(emp1,emp2,emp3); &#125;// ...Collections.sort(empList); 此时会报错： The method sort(List) in the type Collections is not applicable for the arguments (List) 意思是参数类型为List时，sort方法无法执行，原因是泛型没有继承Comparable接口。让Emp类实现Comparable接口并实现compareTo方法。 12345678910111213141516171819202122232425262728293031323334353637383940public class Emp implements Comparable&lt;Emp&gt;&#123; private int empno; private String ename; public int getEmpno() &#123; return empno; &#125; public void setEmpno(int empno) &#123; this.empno = empno; &#125; public String getEname() &#123; return ename; &#125; public void setEname(String ename) &#123; this.ename = ename; &#125; public Emp(int empno, String ename) &#123; super(); this.empno = empno; this.ename = ename; &#125; @Override public int compareTo(@NonNull Emp another) &#123; // 按员工姓名逆序排序 return another.getEname().compareTo(this.getEname()); &#125; @Override public String toString() &#123; return "empno:\t"+empno+"\tename:\t"+ename; &#125;&#125;// 这时候调用Collections.sort(empList);// 输出// Zhang Fei// Liu Bei// Guan YunChang 或者使用第二个方法，调用Collections.sort(List, new Comparator() {});方法，并实现comparator的compare方式 123456789101112131415// 调用的时候Collections.sort(empList, new Comparator&lt;Emp&gt;() &#123; @Override public int compare(Emp e1, Emp e2) &#123; // 按员工姓名正序排序 return e1.getEname().compareTo(e2.getEname()); &#125; &#125;);// 输出// Guan YunChang// Liu Bei// Zhang Fei 总结： 1.对于String或Integer这些已经实现Comparable接口的类来说，可以直接使用Collections.sort方法传入list参数来实现默认方式（正序）排序； 2.如果不想使用默认方式（正序）排序，可以通过Collections.sort传入第二个参数类型为Comparator来自定义排序规则； 3.对于自定义类型(如本例子中的Emp)，如果想使用Collections.sort的方式一进行排序，可以通过实现Comparable接口的compareTo方法来进行，如果不实现，则参考第2点；]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Serialiable和Parceble的使用]]></title>
+    <url>%2F2018%2F05%2F16%2FSerialiable%E5%92%8CParceble%E7%9A%84%E4%BD%BF%E7%94%A8%2F</url>
+    <content type="text"><![CDATA[Serializable使用1234567public class User implements Serializable &#123; private static final long serialVersionUID = 2737236472349823L; public int userId; public String userName; public boolean isMale;&#125; 类实现Serializable接口，即可自动实现序列化过程。 serialVersionUID标识可以指定，也可以不指定。serialVersionUID用来辅助序列化和反序列化过程，序列化后的数据中的serialVersionUID只有和当前类的serialVersionUID相同，才可以被正常反序列化。若不指定，编辑器根据当前类的结构自动生成hash值作为serialVersionUID，但若类发生变化时，比如增加或删除某些成员变量，系统自动重新计算hash值并赋值给serialVersionUID，这个时候当前类的serialVersionUID和序列化数据的serialVersionUID不一致，反序列会失败。（目前使用中好像没发现这个问题，为什么？？？） 重写序列化和反序列化过程1234567private void writeObject(java.io.ObjectOutputStream out) throws IOException &#123; // write 'this' to 'out'...&#125;private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException &#123; // populate the fields of 'this' from the data in 'in'...&#125; transient关键字:加上transient关键字的变量，不会被序列化。 Parcelable接口使用123456789101112131415161718192021222324252627282930313233343536373839404142434445public class User implements Parcelable &#123; public int userId; public String userName; public boolean isMale; public Book book; public User(int userId, String userName, boolean isMale) &#123; this.userId = userId; this.userName = userName; this.isMale = isMale; &#125; // 内容描述 public describeContents() &#123; return 0; &#125; // 序列化过程 public void writeToParcel(Parcel out, int flags) &#123; out.writeInt(userId); out.writeString(userName); out.writeInt(isMale ? 1 : 0 ); // boolean不能序列化，只能转化成int out.writeParcelable(book, 0); &#125; // 反序列化过程 public static final Parcelable.Creator&lt;User&gt; CREATOR = new Parcelable.Creator&lt;User&gt;() &#123; public User createFromParcel(Parcel in) &#123; return new User(in); &#125; public User[] newArray(int size) &#123; return new User[size]; &#125; &#125;; private User(Parcel in) &#123; userId = in.readInt(); userName = in.readString(); isMale = in.readInt() == 1; book = in.readParcelable(Thread.currentThread().getContextClassLoader()); &#125; &#125; Parcelable的方法说明 方法 功能 标记位 createFromParcel(Parcel in) 从序列化的对象中创建原始对象 newArray(int size) 创建指定长度的原始对象数组 User(Parcel in) 从序列化的对象中创建原始对象 writeToParcel(Parcel out, int flags) 将当前对象写入序列化结构中，flags有0和1两种，为1标识当前对象需要作为返回值返回，不能立即释放资源，几乎所有情况都为0 PARCELABLE_WRITE_RETURN_VAL describeContents 返回当前对象的内容描述。如果含有文件描述符，返回1，否则返回0，几乎所有情况都返回0 CONTENTS_FILE_DESCRIPTOR 区别Serializable是Java中的序列化接口，使用起来简单但开销大，需要大量的I/0操作。Parcelable是Android中的序列化方式，更适合在Android平台上使用，虽然使用起来稍微麻烦，但是效率高。]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Android gradle配置之manifestPlaceholders]]></title>
+    <url>%2F2018%2F04%2F18%2FAndroid%20gradle%E9%85%8D%E7%BD%AE%E4%B9%8BmanifestPlaceholders%2F</url>
+    <content type="text"><![CDATA[在开发应用中，有时候需要接入第三方sdk，而第三方sdk需要申请的key有时候又分为发布版和测试版，经常在测试开发的时候填写key，在发布版时忘记替换成发布版的key，导致发布版应用不能使用。这时候就需要给不同的版本配置不同key。 manifestPlaceholders就可以用来在gradle中为androidmanifest配置不同版本的key值。 在AndroidManifest.xml中: 123&lt;meta-data android:name="com.baidu.lbsapi.API_KEY" android:value="$&#123;BAIDU_LBS_API_KEY&#125;" /&gt; 在moudle的gradle文件中: 1234567891011buildTypes &#123; debug &#123; // .... manifestPlaceholders = [BAIDU_LBS_API_KEY: "debugkey"] &#125; release &#123; // .... manifestPlaceholders = [BAIDU_LBS_API_KEY: "releasekey"] &#125; &#125;]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Android系统应用信息中存储和缓存的计算方法]]></title>
+    <url>%2F2018%2F02%2F27%2FAndroid%E7%B3%BB%E7%BB%9F%E5%BA%94%E7%94%A8%E4%BF%A1%E6%81%AF%E4%B8%AD%E5%AD%98%E5%82%A8%E5%92%8C%E7%BC%93%E5%AD%98%E7%9A%84%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95%2F</url>
+    <content type="text"><![CDATA[进入设置界面，查看每个应用占用的存储空间时，有几样数据，计算方法如下：应用，由三项相加而成 /data/data/com.myapp/lib，即so库文件夹大小 /data/app/com.myapp-1.apk，原始apk文件的复制 /data/dalvik-cache/data@app@com.myapp-1.apk@classes.dex，dalvik虚拟机对dex文件的缓存 USB存储(应用) 把程序装到（或移到）sd卡后的大小。/sdcard/Android/…，参考“应用”项 数据 /data/data/com.myapp/目录大小 - cache子目录大小 - lib子目录大小 SD卡 /sdcard/Android/data/com.myapp/目录大小 - /sdcard/Android/data/com.myapp/cache目录大小 缓存 /data/data/com.myapp/cache目录大小 + /sdcard/Android/data/com.myapp/cache目录大小]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Recycleview的简单使用]]></title>
+    <url>%2F2018%2F02%2F07%2FRecycleview%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8%2F</url>
+    <content type="text"><![CDATA[xmlactivity_main.xml 12345678910111213141516171819202122232425262728&lt;RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="match_parent" tools:context="com.example.yangqiuyan.clickdemo.MainActivity"&gt; &lt;Button android:id="@+id/add_button" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="add" /&gt; &lt;Button android:id="@+id/remove_button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/add_button" android:text="remove" /&gt; &lt;android.support.v7.widget.RecyclerView android:id="@+id/my_recyclerview" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_below="@id/remove_button" android:scrollbars="vertical" /&gt;&lt;/RelativeLayout&gt; MainActivity.java1234567891011121314151617181920212223242526272829303132333435363738394041424344class MainActivity : AppCompatActivity() &#123; var mMyAdapter: MyAdapter? = null var mLayoutManager: LinearLayoutManager? = null var mRecyclerView: RecyclerView? = null override fun onCreate(savedInstanceState: Bundle?) &#123; super.onCreate(savedInstanceState) setContentView(R.layout.activity_main) initData() initView() initListener() &#125; fun initData() &#123; mMyAdapter = MyAdapter(this, getData()) mLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false) &#125; fun initView() &#123; mRecyclerView = findViewById(R.id.my_recyclerview) // 设置布局管理器 mRecyclerView!!.layoutManager = mLayoutManager // 设置适配器 mRecyclerView!!.adapter = mMyAdapter // 设置recycleview添加和移除动画 mRecyclerView!!.itemAnimator = DefaultItemAnimator() &#125; fun getData(): ArrayList&lt;String&gt; &#123; var data = ArrayList&lt;String&gt;() (0 until 25).mapTo(data) &#123; "item" + it &#125; return data &#125; fun initListener() &#123; add_button.setOnClickListener &#123; mMyAdapter!!.addNewItem() &#125; remove_button.setOnClickListener &#123; mMyAdapter!!.deleteitem() &#125; &#125;&#125; MyAdapter.java12345678910111213141516171819202122232425262728293031323334353637383940414243class MyAdapter(context: Context, data: ArrayList&lt;String&gt;) : RecyclerView.Adapter&lt;MyAdapter.ViewHolder&gt;() &#123; var context: Context? = null var data: ArrayList&lt;String&gt;? = null init &#123; this.context = context this.data = data &#125; override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder &#123; var view = LayoutInflater.from(context).inflate(R.layout.recycleview_item, parent, false) var viewHolder = ViewHolder(view) return viewHolder &#125; override fun getItemCount(): Int &#123; return data!!.size &#125; override fun onBindViewHolder(holder: ViewHolder?, position: Int) &#123; holder!!.textview!!.text = data!![position] &#125; class ViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) &#123; var textview: TextView? = null init &#123; textview = itemView?.findViewById(R.id.textview) &#125; &#125; fun addNewItem() &#123; data!!.add(1, "new item") notifyItemInserted(1) &#125; fun deleteitem() &#123; data!!.removeAt(1) notifyItemRemoved(1) &#125;&#125; 每个item的布局文件这里就不贴出来。]]></content>
+      <categories>
+        <category>Kotlin</category>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[华为手机兼容性处理]]></title>
+    <url>%2F2017%2F12%2F12%2Fandroid-%E5%8D%8E%E4%B8%BA%E6%89%8B%E6%9C%BA%E5%85%BC%E5%AE%B9%E6%80%A7%E5%A4%84%E7%90%86%2F</url>
+    <content type="text"><![CDATA[华为Toast显示因为华为系统对Toast进行了定制，所以如果两个触发时机非常接近的Toast，华为只会显示一个。例: 12Toast.makeText(this, "this is toast 1", Toast.LENGTH_SHORT).show();Toast.makeText(this, "this is toast 2", Toast.LENGTH_Long).show(); 则华为手机只会显示最后一个toast。 背景绘制最近在做项目的时候，需要给一个Fragment的背景绘制上倾斜的水印，水印的绘制通过自定义drawable，重写draw()方法生成一张drawable，然后用setBackground()设置为背景。 水印生成的代码如下： 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061public class WarterMarkDrawable extends Drawable &#123; Context context; String markStr = ""; int textColor = Color.BLACK; int textSize = 30; int backgroundColor = Color.WHITE; int rotate = -30; int alpha = 41; int density = 10; private Paint paint = new Paint(); public WarterMarkDrawable(Context context, String watermark) &#123; this.context = context; this.markStr = watermark; this.textColor = ContextCompat.getColor(context, R.color.water_mark_color); this.textSize = 42; this.backgroundColor = ContextCompat.getColor(context, R.color.background_6_0); this.rotate = -20; this.density = 7; &#125; @Override public void draw(@NonNull Canvas canvas) &#123; int width = getBounds().right + 200; int height = getBounds().bottom + 200; canvas.drawColor(backgroundColor); paint.setColor(textColor); paint.setAntiAlias(true); paint.setTextSize(textSize); canvas.rotate(rotate); canvas.save(); float textWidth = paint.measureText(markStr); int index = 0; int sheight = 100; float swidth = textWidth * 2 + 20; for (int positionY = sheight; positionY &lt;= height; positionY += sheight) &#123; float fromX = -width + (index++ % 2) * textWidth; for (float positionX = fromX; positionX &lt; width; positionX += swidth) &#123; canvas.drawText(markStr, positionX, positionY, paint); &#125; &#125; canvas.restore(); &#125; @Override public void setAlpha(int i) &#123; &#125; @Override public void setColorFilter(@Nullable ColorFilter colorFilter) &#123; &#125; @Override public int getOpacity() &#123; return PixelFormat.UNKNOWN; &#125;&#125; 一开始这方法生成的drawable都没有问题，也没有造成内存泄露。直到遇到了华为MT7 4.4系统，用这方法生成水印背景，导致所有设置该背景的Fragment内容全部变成倾斜。在前辈的帮助下，定位问题，可能是在draw()方法里面绘制背景的时候，用canvas.rotate(rotate);对整个画布进行旋转，华为MT7 4.4系统应该把所有的内容(包括listview等)都绘制在canvas上面，是得在进行选择的时候，不是对该背景的canvas进行旋转，而是旋转了所有的view。 更新：经过多个机型匹配发现，这是Android4.4手机系统都会有的问题 前辈说在onDraw()函数加canvas.save()和canvas.restore()可以解决问题，还没验证 对生成自定义drawable进行了改造。 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192public class WarterMarkDrawable extends Drawable &#123; Context context; String markStr = ""; int textColor = Color.BLACK; int textSize = 30; int backgroundColor = Color.WHITE; int rotate = -30; int alpha = 41; int density = 10; private Paint paint = new Paint(); Bitmap bitmap = null; public WarterMarkDrawable(Context context, String watermark) &#123; this.context = context; this.markStr = watermark; this.textColor = ContextCompat.getColor(context, R.color.water_mark_color); this.textSize = 42; this.backgroundColor = ContextCompat.getColor(context, R.color.background_6_0); this.rotate = -20; this.density = 7; &#125; public WarterMarkDrawable(Context context, String watermark, Bitmap bitmap) &#123; this.context = context; this.markStr = watermark; this.textColor = ContextCompat.getColor(context, R.color.water_mark_color); this.textSize = 42; this.backgroundColor = ContextCompat.getColor(context, R.color.background_6_0); this.rotate = -20; this.density = 7; this.bitmap = bitmap; &#125; @Override public void draw(@NonNull Canvas canvas) &#123; int width; int height; // 只有mt7才会进入该方法 在外面将水平drawable转换成bitmap后再旋转bitmap 绘制在canvas上 if (bitmap != null) &#123; Matrix matrix = new Matrix(); // 根据中点旋转 matrix.postRotate(rotate, bitmap.getWidth() / 2, bitmap.getHeight() / 2); canvas.drawBitmap(bitmap, matrix, paint); &#125; else &#123; // 华为MT7不能直接旋转画布 先生成一个水平的不旋转的drawable if (DeviceInfo.MODEL.getModel().contains("HUAWEI MT7")) &#123; WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE); width = wm.getDefaultDisplay().getWidth() + 200; height = wm.getDefaultDisplay().getHeight() + 200; &#125; else &#123; // 普通系统走正常的生成水印代码 width = getBounds().right + 200; height = getBounds().bottom + 200; canvas.rotate(rotate); &#125; canvas.drawColor(backgroundColor); paint.setColor(textColor); paint.setAntiAlias(true); paint.setTextSize(textSize); canvas.save(); float textWidth = paint.measureText(markStr); int index = 0; int sheight = 100; float swidth = textWidth * 2 + 20; for (int positionY = sheight; positionY &lt;= height; positionY += sheight) &#123; float fromX = -width + (index++ % 2) * textWidth; for (float positionX = fromX; positionX &lt; width; positionX += swidth) &#123; canvas.drawText(markStr, positionX, positionY, paint); &#125; &#125; canvas.restore(); &#125; &#125; @Override public void setAlpha(int i) &#123; &#125; @Override public void setColorFilter(@Nullable ColorFilter colorFilter) &#123; &#125; @Override public int getOpacity() &#123; return PixelFormat.UNKNOWN; &#125;&#125; 增加了一个bitmap成员，在华为MT7 系统上，先生成一个不旋转的水平的水印背景drawable，将改drawable转化成bitmap，然后对该bitmap进行旋转，绘制在canvas上，避免了旋转canvas。 在外围调用的时候 12345678910111213141516// 先生成一张drawable 若是华为MT7系统 则生成的是不旋转的水平drawableWarterMarkDrawable waterDrawable = new WarterMarkDrawable(context, watermark);// 华为MT7不能直接在画布上旋转if (DeviceInfo.MODEL.getModel().contains("HUAWEI MT7")) &#123; WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE); // 将drawable转化成bitmap int width = wm.getDefaultDisplay().getWidth() + 200; int height = wm.getDefaultDisplay().getHeight() + 200; Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888); Canvas canvas = new Canvas(bitmap); waterDrawable.draw(canvas); // 再生成一次drawable，这次传入bitmap后，会将改bitamp选择并绘制在canvas上，而不是选择canvas WarterMarkDrawable bitmapDrawable = new WarterMarkDrawable(context, watermark, bitmap);&#125; // ... 将waterDrawable 或 bitmapDrawable设置成view的背景，即完成水印背景的绘制 总结：简直被华为系统坑爆了。。。]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[android string资源的用法]]></title>
+    <url>%2F2017%2F11%2F28%2Fandroid-string%E7%94%A8%E6%B3%95%2F</url>
+    <content type="text"><![CDATA[Android string的用法 原文地址：%1$s %1$d Android string 整型例如”我今年23岁了”，可以在string.xml文件中这样写 1&lt;string name="old"&gt;我今年%1$d岁了&lt;/string&gt; 在程序中这样使用 12String str = getResource().getString(R.string.old);String year = String.format(str, 23); 将%1$d替换为23。%1$d的意思为，name=”old”这个字符串中，第一个参数为整型。如果一个string资源中，有两个替换的部分，则第二个写为%2$(X)，X为整型或string型，以此类推。 string型例如，”我的名字叫李四，我来自北京”，在string.xml资源文件中，可以写成: 1&lt;string name="info"&gt;我的名字叫%1$s,我来自%2$s。&lt;/string&gt; 在程序中写成: 1String info = String.format(getResource().getString(R.string.info), "李四","北京");]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[java enum的用法]]></title>
+    <url>%2F2017%2F11%2F21%2Fjava-enum%E7%9A%84%E7%94%A8%E6%B3%95%2F</url>
+    <content type="text"><![CDATA[Java enum的用法 原文地址：Java enum的用法 主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始 用法常量123public enum Color&#123; RED,GREEN,BLANK,YELLOW&#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先定义enum实例。 123456789101112131415161718192021222324252627282930313233public enum Color&#123; RED("红色",1), GREEN("绿色",2), BLANK("白色"，3), YELLO("黄色", 4); // 成员变量 private String name; private int index; // 构造方法 private Color(String name, int index) &#123; this.name = name; this.index = index; &#125; // 普通方法 public static String getName(int index) &#123; for(Color c : Color.values()) &#123; if(c.getIndex() == index) &#123; return c.name; &#125; &#125; return null; &#125; // 构造器 public String getName() &#123; return name; &#125; public void setName(String name) &#123; this.name = name; &#125; public int getIndex() &#123; return index; &#125; public void setIndex(int index) &#123; this.index = index; &#125;&#125;]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Kotlin实战2 — 类和属性]]></title>
+    <url>%2F2017%2F11%2F20%2FKotlin%E5%AE%9E%E6%88%982-%E7%B1%BB%E5%92%8C%E5%B1%9E%E6%80%A7%2F</url>
+    <content type="text"><![CDATA[Kotlin实战2 — 类和属性属性类的概念就是把数据处理和处理数据的代码封装成一个单一的实体。在Java中，数据存储在字段中，通常还是私有的。如果想让类的使用者访问到数据，要提供访问器方法，一个setter，一个getter。 在Java中，字段和其访问器的组合常常被叫做属性。在Kotlin中，类声明一个属性和声明一个变量一样:使用val和var关键字。 1234class Person( val name: String var isMarried: Boolean) 当我们声明属性的时候，就声明了对应的构造器（val属性只有getter构造器，而var属性有setter和getter）。Kotlin的Person隐藏了和原始Java代码相同的实现，所以无论在Java代码中，还是Kotlin代码中，都可以用同样的方式使用这个类。 123456// javaPerson person = new Person("Bob", true);System.out.prientln(person.getName);// kotlinval person = Person("Bob", false) // 调用构造方法不需要关键字newprintln(person.name) // 直接访问属性，但调用的是getter 自定义访问器1234567class Rectangle(val height: Int, val width: Int) &#123; val isSquare: Boolean get() &#123; return height == width; &#125;&#125;// or get() = height == width]]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Kotlin实战1 — 函数和变量]]></title>
+    <url>%2F2017%2F11%2F19%2FKotlin%E5%AE%9E%E6%88%981%2F</url>
+    <content type="text"><![CDATA[Kotlin实战1 — 函数和变量函数123fun max(a: Int, b: Int): Int &#123; return if (a &gt; b) a else b&#125; ​ 函数声明以关键字fun开始，函数名紧随其后，括号括起来参数列表，参数列表后面跟着返回类型，与参数用一个冒号隔开。 在Kotlin中，if是表达式，而不是语句。表达式：表达式由变量，操作符和方法调用组成，表达式的返回值类型由表达式中的元素（如操作符，变量等）决定如：a = 1。语句：是完整的执行单元，如：赋值表达式、所有使用 ++ 或者 --的变量、方法引用、创建对象的表达式，如：a++; 表达式函数体1fun max(a: Int, b: Int): Int = if(a &gt; b) a els b 如果函数体写在花括号中，我们说这个函数有代码块体，如果直接返回了一个表达式，它就有表达式体。对于表达式函数体来说，函数还可以省略返回值类型，编译器会分析作为函数体的表达式，并把它的类型作为函数的返回值类型，这种分析被称为类型推导。 变量在Kotlin中，声明变量以关键字开始，然后是变量名，最后可以加上类型（也可以不加上）。 12val question = "the ultimate question of life,th universe,and everything"val answer = 42 如果变量没有初始化器，就需要显示的指定它的类型 12val answer: Intanswer = 42 可变变量和不可变变量 val — 不可变引用。使用val声明的变量不能在初始化之后再次赋值，它对应的是Java的final变量。 var — 可变引用。这种变量的值可以被改变，对应普通（非final）的Java变量 val引用自身是不可变的，但它指向的对象可能是可变的。例如： 12val languages = arrayListOf("Java")languages.add("Android") 字符串模板1234fun main(args: Array&lt;String&gt;) &#123; val name = if(args.size &gt; 0) args[0] : "Kotlin" println("hello, $name!")&#125; Kotlin可以在字符串字面值中引用局部变量，只需要在变量名称前面加上字符$。等价于Java中的字符串连接(“hello, “ + name + “!”)。还可以使用更复杂的表达式： 12345fun main(args: Array&lt;String&gt;) &#123; if(args.size &gt; 0) &#123; printl("hello, $&#123;args[0]&#125;!") &#125;&#125; 还可以在双引号中直接嵌套双引号，只要它们处于某个表达式的范围内（即花括号内）。 123fun main(args: Array&lt;String&gt;) &#123; println("hello, $&#123;if (args.size &gt; 0) args[0] else "someone"&#125;!")&#125;]]></content>
+      <categories>
+        <category>Kotlin</category>
+      </categories>
+      <tags>
+        <tag>Kotlin</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[first blog]]></title>
+    <url>%2F2017%2F11%2F17%2Ffirst-blog%2F</url>
+    <content type="text"><![CDATA[A test atricul for my blog I’m learning how to do it.]]></content>
+      <categories>
+        <category>Life</category>
+      </categories>
+      <tags>
+        <tag>Life</tag>
+      </tags>
+  </entry>
+</search>
