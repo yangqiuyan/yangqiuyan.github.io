@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[一些碎碎念]]></title>
-    <url>%2F2019%2F08%2F22%2F%E4%B8%80%E4%BA%9B%E7%A2%8E%E7%A2%8E%E5%BF%B5%2F</url>
-    <content type="text"><![CDATA[前一个月，也不知道怎么，恍恍惚惚的被一个人喜欢，然后成了他的女朋友，虽然感受不到是否是喜欢，但还是挺开心的那段时间，虽然不会把他介绍给朋友，但是默默的跟着他出门，介绍认识他的朋友。但是在关键时刻，我突然清醒，这个男人并没有那么喜欢我，这个男人，会让以后我的生活更加艰难。我承认我是一个物质的女人，我可以不要奢华的生活，但至少不要是连吃点好吃的，都负担不起的生活，所以我选择了分手。但是分手后，又有点难受和寂寞。在周五，我选择了人生的第一次服软，我选择了复合，然后被拒绝了。我承认我是狼狈的离开，他仿佛还笑了…然而并没有我想象的那么悲伤，我静静的睡着，第二天静静的去参加喜欢我的男生的生日，为他做了一桌晚餐。虽然有时候会回想，会觉得是不是又错过了一个命中的人，觉得自己年龄也不小了，是应该有一个男朋友了，不过，既然离开了，还没有退路，那不如还是坚持往前走吧，可能这就是有缘无分吧。 知道你最近过得不好，我也没有恶毒的笑了，也没有该有的难受，虽然可以帮你一点忙，但应该只是朋友，甚至连朋友都不是了。不知道你以后会怎样，但是我，会按照我既定的路线继续往前了。]]></content>
-      <categories>
-        <category>Life</category>
-      </categories>
-      <tags>
-        <tag>Life</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[TextView实现类型微信的全文功能]]></title>
     <url>%2F2018%2F11%2F22%2FTextView%E5%AE%9E%E7%8E%B0%E7%B1%BB%E5%9E%8B%E5%BE%AE%E4%BF%A1%E7%9A%84%E5%85%A8%E6%96%87%E5%8A%9F%E8%83%BD%2F</url>
     <content type="text"><![CDATA[在最近的项目中，有个列表需要展示类似微信朋友圈的全文功能，点击全文展示所有的内容，点击隐藏全文，展示原本的文本。 设置TextView最多只能展示5行，超过5行的时候展示省略号（TextView设置最大行数的同时支持Span属性的一些坑，已经在LinkMovementMethod那些坑中描述）。我们只要知道当前展示的文字长度超过了5行，就可以知道是否要展示全文按钮，可以使用addOnGlobalLayoutListener（）在TextView绘制完成后进行展示文字长度的判断，我选择自定义TextView，在onMeasure（）中进行判断。 一开始在网上搜罗了一些方法后，感觉还挺简单的，码上代码： 12345678910111213141516171819202122232425public class SpannableTextView extends TextView &#123; private TextViewShowCallback callback; public SpannableTextView(Context context, @Nullable AttributeSet attrs) &#123; super(context, attrs); &#125; @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) &#123; super.onMeasure(widthMeasureSpec, heightMeasureSpec); Layout mainLayout = getLayout(); int lineCount = mainLayout.getLineCount(); // 获取当前TextView展示的行数 // mainLayout.getLineEnd(lineCount - 1)获取当前TextView展示的最后一个字符的位置 callback.configMoreText(lineCount, mainLayout.getLineEnd(lineCount - 1)); &#125; public void setCallback(TextViewShowCallback callback) &#123; this.callback = callback; &#125; // 一个callback来告诉textview的父view展示了多少，当前行末位置 public interface TextViewShowCallback &#123; void configMoreText(int lineCount, long lineEnd); &#125;&#125; 在使用了这个TextView的RecyclerView的adapter里面 123456789101112131415161718linkText.setCallback(new SpannableTextView.TextViewShowCallback() &#123; @Override public void configMoreText(int lineCount, long lineEnd) &#123; // 不展开的时候最多只有5行，少于5行不展示加载更多，等于5行才判断是否要展示 if (lineCount == 5) &#123; // 文字已经全部展示不需要显示下边展示更多按钮 if (msg.length() &lt;= lineEnd) &#123; return; &#125; linkMore.setVisibility(View.VISIBLE); linkMore.setText("全文"); &#125; else if (lineCount &gt; 5) &#123; // 展开后才会超过五行 linkMore.setVisibility(View.VISIBLE); linkMore.setText("收起"); &#125; &#125;&#125;); 跑了一下，看到全文和收起可以正常使用了，美滋滋的以为so easy啊。然鹅，过不了多久就收到qa的bug邮件，说她的文本都没有全文按钮。不能啊，我这明明好好的呢，一定是见鬼了（我的代码不存在bug的，不接受反驳╭(๑¯д¯๑)╮）。多拿了几个机型跑了一下，发现Android 8.0以上的机器都不能正常显示全文按钮，跟debug后发现是lineEnd的值不准，返回的是全文的长度。翻google无果后，就想还是得靠自己，开始翻源码，然后！！！就发现了一个大坑。。 在sdk 27的源码中，getLineEnd（）源码如下： 12345678910111213/** * Return the text offset after the last character on the specified line. */public final int getLineEnd(int line) &#123; return getLineStart(line + 1);&#125;/** * Return the text offset of the beginning of the specified line ( * 0&amp;hellip;getLineCount()). If the specified line is equal to the line * count, returns the length of the text. */public abstract int getLineStart(int line); 看到getLineStart上面写着，如果参数line和目前TextView的line一致的话，就返回文本的全部长度，我整个人陷入了沉思。。。这么存在的一个方法有什么用啊，什么用。。。为什么Android 5.0可以用啊，可以用。。。都这样了，那只能自己想办法计算了，最后计算方法如下： 123456789101112131415161718192021222324252627282930313233343536373839404142434445public class SpannableTextView extends TextView &#123; private TextViewShowCallback callback; public SpannableTextView(Context context, @Nullable AttributeSet attrs) &#123; super(context, attrs); &#125; @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) &#123; super.onMeasure(widthMeasureSpec, heightMeasureSpec); Layout mainLayout = getLayout(); int lineCount = mainLayout.getLineCount(); int leftLineWidth = 0; // 第五行的文本宽度 TextPaint textPaint = getPaint(); // 文字刚好等于5行的情况，需要另外计算已经显示的文字长度 if (lineCount == getMaxLines()) &#123; // 第四行末尾的文字长度 int lineEnd = mainLayout.getLineEnd(lineCount - 2); // 剩下的文本 String leftStr = getText().subSequence(lineEnd, getText().length()).toString(); int i = 0; for (; i &lt; leftStr.length(); i++) &#123; // 获取每个字符的宽度，单位为pixel leftLineWidth += textPaint.measureText(leftStr, i, i + 1); // 如果超过TextView的宽度，说明第五行展示完了 if (leftLineWidth &gt; getMeasuredWidth()) &#123; break; &#125; &#125; // 加上第五行展示的字符个数，得到最终的lineEnd lineEnd += i; callback.configMoreText(lineCount, lineEnd); return; &#125; callback.configMoreText(lineCount, mainLayout.getLineEnd(lineCount - 1)); &#125; public void setCallback(TextViewShowCallback callback) &#123; this.callback = callback; &#125; public interface TextViewShowCallback &#123; void configMoreText(int lineCount, long lineEnd); &#125;&#125; 在Android 5.0 7.0 8.0都跑了一下，这下真的可以正常展示。。。 写代码一分钟，解bug一天。。。╮（﹀＿﹀）╭ 最后附上在RecyclerView中的item里，点击全文和收起的实现代码： 12345678910111213141516171819202122232425262728293031// 标志展开的item的位置int opened = -1;// 在相关item的初始化位置// 是否是已经展开的if (opened == position) &#123; linkText.setMaxLines(Integer.MAX_VALUE); linkText.setEllipsize(null);&#125; else &#123; linkText.setMaxLines(5); linkText.setEllipsize(TextUtils.TruncateAt.END);&#125;// 全文或者收起按钮点击监听linkMore.setOnClickListener(new View.OnClickListener() &#123; @Override public void onClick(View v) &#123; if (opened == getAdapterPosition()) &#123; // 已经展开，就关闭 opened = -1; notifyItemChanged(getAdapterPosition()); &#125; else &#123; int oldOpened = opened; opened = getAdapterPosition(); notifyItemChanged(oldOpened); notifyItemChanged(opened); &#125; &#125;&#125;);// 若需要自己修改itemchanged的动画时长等linkRecyclerview.getItemAnimator().setChangeDuration(300);]]></content>
@@ -53,39 +42,6 @@
       </categories>
       <tags>
         <tag>Kotlin</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-07-05-随记]]></title>
-    <url>%2F2018%2F07%2F05%2Fnote%2F</url>
-    <content type="text"><![CDATA[曾经说，喜欢到想娶你的人，如今已经有另外的心上人。因为自己的任性，错过了一个本很好的人。要说后悔，肯定是有的，但这句话，绝对不会说出来的。既然他现在过得很好，祝福他就好了。]]></content>
-      <categories>
-        <category>Life</category>
-      </categories>
-      <tags>
-        <tag>Life</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-07-03-随记]]></title>
-    <url>%2F2018%2F07%2F03%2Fnote%2F</url>
-    <content type="text"><![CDATA[如果以后再也见不到你，那么祝你早安、午安、晚安。 Good morning, and in case I don’t see ya, good afternoon, good evening, and good night. ​ ——《楚门的世界》]]></content>
-      <categories>
-        <category>Life</category>
-      </categories>
-      <tags>
-        <tag>Life</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[2018-06-30-随记]]></title>
-    <url>%2F2018%2F06%2F30%2Fnote%2F</url>
-    <content type="text"><![CDATA[莫名的喜欢《哈儿的移动城堡》，无论看多少遍，内心总是被莫名的触动，可能是因为苏菲的乐观，可能是因为哈儿的悲观。]]></content>
-      <categories>
-        <category>Life</category>
-      </categories>
-      <tags>
-        <tag>Life</tag>
       </tags>
   </entry>
   <entry>
@@ -198,17 +154,6 @@
       </categories>
       <tags>
         <tag>Kotlin</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title><![CDATA[first blog]]></title>
-    <url>%2F2017%2F11%2F17%2Ffirst-blog%2F</url>
-    <content type="text"><![CDATA[A test atricul for my blog I’m learning how to do it.]]></content>
-      <categories>
-        <category>Life</category>
-      </categories>
-      <tags>
-        <tag>Life</tag>
       </tags>
   </entry>
 </search>
