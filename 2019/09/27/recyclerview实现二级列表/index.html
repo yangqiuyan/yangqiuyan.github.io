@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入文章密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="recyclerview,二级列表" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="二级列表是项目中经常会用到的组件，本着学习新组件的思想，决定不用ExpandableListView，而是用RecyclerView实现。 为了不重复造轮子，在github上搜索一番，看到一个还不错的项目thoughtbot/expandable-recycler-view，这个项目封装好了二级列表的整个实现，使用起来也很简单，下载项目看一下sample就多清楚了。但是这个项目有个问题，不能更新数">
+<meta name="keywords" content="recyclerview,二级列表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="recyclerview实现二级列表">
+<meta property="og:url" content="https://yangqiuyan.github.io/2019/09/27/recyclerview实现二级列表/index.html">
+<meta property="og:site_name" content="Mobius">
+<meta property="og:description" content="二级列表是项目中经常会用到的组件，本着学习新组件的思想，决定不用ExpandableListView，而是用RecyclerView实现。 为了不重复造轮子，在github上搜索一番，看到一个还不错的项目thoughtbot/expandable-recycler-view，这个项目封装好了二级列表的整个实现，使用起来也很简单，下载项目看一下sample就多清楚了。但是这个项目有个问题，不能更新数">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://yangqiuyan.github.io/2019/09/27/recyclerview实现二级列表/expandablerecyclerview.jpeg">
+<meta property="og:updated_time" content="2019-09-27T08:55:46.278Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="recyclerview实现二级列表">
+<meta name="twitter:description" content="二级列表是项目中经常会用到的组件，本着学习新组件的思想，决定不用ExpandableListView，而是用RecyclerView实现。 为了不重复造轮子，在github上搜索一番，看到一个还不错的项目thoughtbot/expandable-recycler-view，这个项目封装好了二级列表的整个实现，使用起来也很简单，下载项目看一下sample就多清楚了。但是这个项目有个问题，不能更新数">
+<meta name="twitter:image" content="https://yangqiuyan.github.io/2019/09/27/recyclerview实现二级列表/expandablerecyclerview.jpeg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yangqiuyan.github.io/2019/09/27/recyclerview实现二级列表/"/>
+
+
+
+
+
+  <title>recyclerview实现二级列表 | Mobius</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Mobius</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            时间轴
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangqiuyan.github.io/2019/09/27/recyclerview实现二级列表/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mobius">
+      <meta itemprop="description" content="梦想总是要有的，万一实现了呢。">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mobius">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">recyclerview实现二级列表</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-27T14:19:08+08:00">
+                2019-09-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/09/27/recyclerview实现二级列表/" class="leancloud_visitors" data-flag-title="recyclerview实现二级列表">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-thermometer-quarter"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+                 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>二级列表是项目中经常会用到的组件，本着学习新组件的思想，决定不用ExpandableListView，而是用RecyclerView实现。</p>
+<p>为了不重复造轮子，在github上搜索一番，看到一个还不错的项目<a href="https://github.com/thoughtbot/expandable-recycler-view" target="_blank" rel="noopener">thoughtbot/expandable-recycler-view</a>，这个项目封装好了二级列表的整个实现，使用起来也很简单，下载项目看一下sample就多清楚了。但是这个项目有个问题，不能更新数据，recyclerview数据是初始化的时候给定的，没有后续变更数据的操作，所以修改了一下这个项目。</p>
+<h4 id="1-实现动态变更数据"><a href="#1-实现动态变更数据" class="headerlink" title="1. 实现动态变更数据"></a>1. 实现动态变更数据</h4><ol>
+<li><p>ExpandableGroup类增加teamId，每个分组的唯一标识</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExpandableGroup</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Parcelable</span>&gt; <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> teamId;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ExpandableGroup</span><span class="params">(<span class="keyword">int</span> teamId, String title, List&lt;T&gt; items)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.teamId = teamId;</span><br><span class="line">        <span class="keyword">this</span>.title = title;</span><br><span class="line">        <span class="keyword">this</span>.items = items;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">ExpandableGroup</span><span class="params">(Parcel in)</span> </span>&#123;</span><br><span class="line">        teamId = in.readInt();</span><br><span class="line">        <span class="comment">// ..</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getTeamId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> teamId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTeamId</span><span class="params">(<span class="keyword">int</span> teamId)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.teamId = teamId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;</span><br><span class="line">        dest.writeInt(teamId);</span><br><span class="line">       <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修改ExpandableList类的变量blic boolean[] expandedGroupIndexes;该变量被用来记住当前分组是否展开，默认为false，用boolean数组不好的一点，在数据增加或者减少的时候，没办法把旧展开状态还原到新的数据中，修改为使用map，根据每个分组的id，来存储分组的展开状态，并在数据变更的时候，还原状态。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExpandableList</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;? extends ExpandableGroup&gt; groups;</span><br><span class="line">  	<span class="comment">// 修改为使用map，对项目中其他使用该变量的地方相应的修改为根据teamId获取或更新展开状态</span></span><br><span class="line">    <span class="keyword">public</span> SparseBooleanArray expandedGroupIndexes; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ExpandableList</span><span class="params">(List&lt;? extends ExpandableGroup&gt; groups)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.groups = groups;</span><br><span class="line">      </span><br><span class="line">      	<span class="comment">// 默认都为false </span></span><br><span class="line">        expandedGroupIndexes = <span class="keyword">new</span> SparseBooleanArray();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; groups.size(); i++) &#123;</span><br><span class="line">            expandedGroupIndexes.put(groups.get(i).getTeamId(), <span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在ExpandableRecyclerViewAdapter.java中，增加更新数据的方法，进行数据的更新。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setGroups</span><span class="params">(List&lt;? extends ExpandableGroup&gt; groups)</span> </span>&#123;</span><br><span class="line">  	<span class="comment">// 保留一份老的展开状态的数据</span></span><br><span class="line">    SparseBooleanArray oldIndex = <span class="keyword">this</span>.expandableList.expandedGroupIndexes.clone();</span><br><span class="line">    <span class="keyword">this</span>.expandableList.groups = groups; <span class="comment">// 设置新的数据</span></span><br><span class="line">  	<span class="comment">// 设置新的展开状态数据</span></span><br><span class="line">    <span class="keyword">this</span>.expandableList.expandedGroupIndexes = <span class="keyword">new</span> SparseBooleanArray();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; groups.size(); i++) &#123;</span><br><span class="line">        <span class="keyword">this</span>.expandableList.expandedGroupIndexes.put(groups.get(i).getTeamId(), <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    SparseBooleanArray newIndex = <span class="keyword">this</span>.expandableList.expandedGroupIndexes;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; newIndex.size(); i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; oldIndex.size(); j++) &#123;</span><br><span class="line">            <span class="comment">// 如果含有老的数据的话，还原到新数据集</span></span><br><span class="line">            <span class="keyword">if</span> (newIndex.keyAt(i) == oldIndex.keyAt(j)) &#123;</span><br><span class="line">                newIndex.put(oldIndex.keyAt(j), oldIndex.get(oldIndex.keyAt(j)));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样便可实现动态修改二级列表的数据，弥补了原项目不能动态修改数据的一个不足。</p>
+</li>
+</ol>
+<h4 id="2-实现类似ExpandableListview的列表悬浮在顶部效果-可分页加载RecyclerView"><a href="#2-实现类似ExpandableListview的列表悬浮在顶部效果-可分页加载RecyclerView" class="headerlink" title="2. 实现类似ExpandableListview的列表悬浮在顶部效果+可分页加载RecyclerView"></a>2. 实现类似ExpandableListview的列表悬浮在顶部效果+可分页加载RecyclerView</h4><p>这个功能使用比较简单的方法，在RecyclerView顶部增加一个view，在滑动的时候，该view一直在顶部展示，并且展示当前分组下的Group的名称和状态等。</p>
+<ol>
+<li>顶部悬浮view实现</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 自定义recyclerview继承relativeLayout</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExpandableRecyclerView</span> <span class="keyword">extends</span> <span class="title">RelativeLayout</span> </span>&#123;</span><br><span class="line">  	<span class="comment">// 悬浮在顶部的view</span></span><br><span class="line">    <span class="keyword">private</span> RelativeLayout pinnedView;</span><br><span class="line">    ImageView pinnedIcon; <span class="comment">// 顶部悬浮view的icon，可用来表示展开状态</span></span><br><span class="line">    TextView pinnedText; <span class="comment">// 顶部悬浮view的内容</span></span><br><span class="line">    TextView pinnedNum; <span class="comment">// 顶部悬浮view的数据，展示当前分组成员个数</span></span><br><span class="line">    ExpandableRecyclerViewAdapter adapter; <span class="comment">// 项目中的二级列表adapter</span></span><br><span class="line">    <span class="keyword">private</span> RecyclerView recyclerView;</span><br><span class="line">   </span><br><span class="line">    <span class="comment">// 两个状态图标</span></span><br><span class="line">    <span class="keyword">private</span> Drawable mListIndicatorExpanded;</span><br><span class="line">    <span class="keyword">private</span> Drawable mListIndicatorNormal;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ExpandableRecyclerView</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">        initView(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ExpandableRecyclerView</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs);</span><br><span class="line">        initView(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ExpandableRecyclerView</span><span class="params">(Context context, AttributeSet attrs, <span class="keyword">int</span> defStyleAttr)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs, defStyleAttr);</span><br><span class="line">        initView(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initView</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        LayoutInflater.from(context).inflate(R.layout.expandable_recyclerview_layout, <span class="keyword">this</span>, <span class="keyword">true</span>);</span><br><span class="line">        pinnedView = findViewById(R.id.expanded_recyclerview_pinned_view);</span><br><span class="line">        pinnedIcon = findViewById(R.id.expanded_recyclerview_indicator);</span><br><span class="line">        pinnedText = findViewById(R.id.expanded_recyclerview_name);</span><br><span class="line">        pinnedNum = findViewById(R.id.expanded_recyclerview_number);</span><br><span class="line">        recyclerView = findViewById(R.id.expanded_recyclerview);</span><br><span class="line">        MyLinearLayoutManager lm = <span class="keyword">new</span> MyLinearLayoutManager(context, LinearLayoutManager.VERTICAL, <span class="keyword">false</span>);</span><br><span class="line">        recyclerView.setLayoutManager(lm);</span><br><span class="line"></span><br><span class="line">        mListIndicatorExpanded = context.getResources().getDrawable(R.drawable.list_indicator_expanded);</span><br><span class="line">        mListIndicatorNormal = context.getResources().getDrawable(R.drawable.list_indicator_normal);</span><br><span class="line"></span><br><span class="line">        initListener();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initListener</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      	<span class="comment">// 通过recyclerview的滑动判断顶部悬浮view展示内容</span></span><br><span class="line">        recyclerView.addOnScrollListener(<span class="keyword">new</span> RecyclerView.OnScrollListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onScrolled</span><span class="params">(RecyclerView recyclerView, <span class="keyword">int</span> dx, <span class="keyword">int</span> dy)</span> </span>&#123;</span><br><span class="line">                <span class="comment">// 滑动的时候悬浮框置顶</span></span><br><span class="line">                LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();</span><br><span class="line">              	<span class="comment">// 获取第一个可见item位置</span></span><br><span class="line">                <span class="keyword">int</span> firstVisibleItemPosition = lm.findFirstVisibleItemPosition();</span><br><span class="line">                pinnedView.setVisibility(View.VISIBLE);</span><br><span class="line">                <span class="comment">// 对应位置在二级列表里的坐标 该坐标包含父坐标和子坐标</span></span><br><span class="line">                ExpandableListPosition expandableListPosition =</span><br><span class="line">                        adapter.expandableList.getUnflattenedPosition(firstVisibleItemPosition);</span><br><span class="line">								</span><br><span class="line">                <span class="keyword">if</span> (expandableListPosition.groupPos &lt; adapter.getGroups().size()) &#123;</span><br><span class="line">                  	<span class="comment">// 根据二级列表坐标取出group的数据，该数据包含child的数据</span></span><br><span class="line">                    ExpandableGroup expandableGroup =</span><br><span class="line">                            (ExpandableGroup) adapter.getGroups().get(expandableListPosition.groupPos);</span><br><span class="line">                  	<span class="comment">// 根据展开状态设置顶部悬浮view的icon状态</span></span><br><span class="line">                    pinnedIcon.setImageDrawable(</span><br><span class="line">                            adapter.isGroupExpanded(expandableGroup) ? mListIndicatorExpanded : mListIndicatorNormal);</span><br><span class="line">                  	<span class="comment">// 设置顶部悬浮view的内容</span></span><br><span class="line">                    pinnedText.setText(expandableGroup.getTitle());</span><br><span class="line">                  	<span class="comment">// // 设置顶部悬浮view的child的数量</span></span><br><span class="line">                    pinnedNum.setText(</span><br><span class="line">                            expandableGroup.getItems() != <span class="keyword">null</span> ? <span class="string">"("</span> + expandableGroup.getItems().size() + <span class="string">")"</span> : <span class="string">""</span>);</span><br><span class="line">                    pinnedView.setTag(expandableGroup);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        pinnedView.setOnClickListener(<span class="keyword">new</span> OnClickListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">                <span class="comment">// 点击悬浮框展开或伸缩列表</span></span><br><span class="line">                ExpandableGroup expandableGroup = (ExpandableGroup) pinnedView.getTag();</span><br><span class="line">                <span class="keyword">if</span> (expandableGroup != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    adapter.toggleGroup(expandableGroup);</span><br><span class="line">                    recyclerView.scrollToPosition(<span class="number">0</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (pinnedIcon.getDrawable() == mListIndicatorNormal) &#123;</span><br><span class="line">                    pinnedIcon.setImageDrawable(mListIndicatorExpanded);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pinnedIcon.getDrawable() == mListIndicatorExpanded) &#123;</span><br><span class="line">                    pinnedIcon.setImageDrawable(mListIndicatorNormal);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RecyclerView <span class="title">getRecyclerView</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> recyclerView;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> RecyclerView.AdapterDataObserver observer = <span class="keyword">new</span> RecyclerView.AdapterDataObserver() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onChanged</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>.onChanged();</span><br><span class="line">          	<span class="comment">// 更新顶部悬浮view</span></span><br><span class="line">            updatePinnedView();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAdapter</span><span class="params">(<span class="keyword">final</span> ExpandableRecyclerViewAdapter adapter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.adapter = adapter;</span><br><span class="line">      	<span class="comment">// 数据更新的时候，如果不滑动，这个时候顶部悬浮view的内容不准，所以在数据变更的时候要更新顶部悬浮view</span></span><br><span class="line">      	<span class="comment">// adapter注册数据变更监听</span></span><br><span class="line">        <span class="keyword">this</span>.adapter.registerAdapterDataObserver(observer);</span><br><span class="line">        recyclerView.setAdapter(adapter);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 更新pinnedview的内容</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">updatePinnedView</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 查找第一个父布局</span></span><br><span class="line">        LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();</span><br><span class="line">        <span class="keyword">int</span> firstVisibleItemPosition = lm.findFirstVisibleItemPosition();</span><br><span class="line">        <span class="comment">// 对应位置在列表里的坐标</span></span><br><span class="line">        ExpandableListPosition expandableListPosition =</span><br><span class="line">                adapter.expandableList.getUnflattenedPosition(firstVisibleItemPosition);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (expandableListPosition.groupPos &lt; adapter.getGroups().size()) &#123;</span><br><span class="line">            ExpandableGroup expandableGroup =</span><br><span class="line">                    (ExpandableGroup) adapter.getGroups().get(expandableListPosition.groupPos);</span><br><span class="line">            pinnedIcon.setImageDrawable(</span><br><span class="line">                    adapter.isGroupExpanded(expandableGroup) ? mListIndicatorExpanded : mListIndicatorNormal);</span><br><span class="line">            pinnedText.setText(expandableGroup.getTitle());</span><br><span class="line">            pinnedNum.setText(expandableGroup.getItems() != <span class="keyword">null</span> ? <span class="string">"("</span> + expandableGroup.getItems().size() + <span class="string">")"</span> : <span class="string">""</span>);</span><br><span class="line">            pinnedView.setTag(expandableGroup);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// java.lang.IndexOutOfBoundsException: Inconsistency detected.Invalid item position</span></span><br><span class="line">    <span class="comment">// 这个crash据说是recyclerview的bug，google建议重写下面的方法改成false，我试试</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">MyLinearLayoutManager</span> <span class="keyword">extends</span> <span class="title">LinearLayoutManager</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@SuppressWarnings</span>(<span class="string">"SameParameterValue"</span>)</span><br><span class="line">        MyLinearLayoutManager(Context context, <span class="keyword">int</span> orientation, <span class="keyword">boolean</span> reverseLayout) &#123;</span><br><span class="line">            <span class="keyword">super</span>(context, orientation, reverseLayout);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">supportsPredictiveItemAnimations</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用方就像正常的使用RecyclerView一样使用该自定义RecyclerView，最后顶部的悬浮view效果如下：</p>
+<p><img src="/2019/09/27/recyclerview实现二级列表/expandablerecyclerview.jpeg" style="zoom: 33%;"></p>
+<h4 id="3-ExpandableRecyclerView实现分页加载"><a href="#3-ExpandableRecyclerView实现分页加载" class="headerlink" title="3. ExpandableRecyclerView实现分页加载"></a>3. ExpandableRecyclerView实现分页加载</h4><p>对于可能数据量很大的数据来说，分页加载是必不可少的，一次大量的加载请求数据会造成不必要的浪费。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExpandableRecyclerView</span> <span class="keyword">extends</span> <span class="title">RelativeLayout</span> </span>&#123;</span><br><span class="line">    SparseIntArray pageMap = <span class="keyword">new</span> SparseIntArray(); <span class="comment">// 记录每个分组当前分页的页数</span></span><br><span class="line">    <span class="keyword">boolean</span> isNeedPageUpdateData = <span class="keyword">false</span>; <span class="comment">// 是否要分页加载数据</span></span><br><span class="line">  	<span class="comment">// 分页加载滑动到底部回调，由使用方决定下一页的数据加载</span></span><br><span class="line">    PageUpdateDataCallback pageUpdateDataCallback; </span><br><span class="line">    <span class="keyword">int</span> pageSize = <span class="number">50</span>;</span><br><span class="line"></span><br><span class="line">   	<span class="comment">// ....</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initListener</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        recyclerView.addOnScrollListener(<span class="keyword">new</span> RecyclerView.OnScrollListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onScrolled</span><span class="params">(RecyclerView recyclerView, <span class="keyword">int</span> dx, <span class="keyword">int</span> dy)</span> </span>&#123;</span><br><span class="line">                <span class="comment">// ...</span></span><br><span class="line">                <span class="comment">// 向上滚动 清空数据</span></span><br><span class="line">                <span class="keyword">if</span> (dy &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pageMap.size(); i++) &#123;</span><br><span class="line">                        pageMap.put(pageMap.keyAt(i), <span class="number">1</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 向下滚动 分页加载</span></span><br><span class="line">                <span class="keyword">if</span> (isNeedPageUpdateData &amp;&amp; dy &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                  	<span class="comment">// 获取最后一个可见item在列表中的位置</span></span><br><span class="line">                    <span class="keyword">int</span> lastVisiableItemPos = lm.findLastVisibleItemPosition();</span><br><span class="line">                    <span class="comment">// 对应位置在列表里的坐标</span></span><br><span class="line">                    ExpandableListPosition lastExpandableListPos =</span><br><span class="line">                            adapter.expandableList.getUnflattenedPosition(lastVisiableItemPos);</span><br><span class="line">                    ExpandableGroup expandableGroup =</span><br><span class="line">                            (ExpandableGroup) adapter.getGroups().get(lastExpandableListPos.groupPos);</span><br><span class="line">                    <span class="keyword">int</span> childPos = lastExpandableListPos.childPos;</span><br><span class="line">                    <span class="keyword">int</span> page = pageMap.get(expandableGroup.getTeamId());</span><br><span class="line">                  	<span class="comment">// 如果最后一个可见item的childPos等于当前分组的分页加载总数量，表示滑动到当前分页的最后一条数据，可以开始加载下一页数据</span></span><br><span class="line">                    <span class="keyword">if</span> (childPos == page * pageSize) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (pageUpdateDataCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            page++;</span><br><span class="line">                            pageMap.put(expandableGroup.getTeamId(), page);</span><br><span class="line">                          	<span class="comment">// 回调给使用方</span></span><br><span class="line">                            pageUpdateDataCallback.getPageData(expandableGroup, page);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 分页更新数据的size</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPageSize</span><span class="params">(<span class="keyword">int</span> pageSize)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pageSize = pageSize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 是否需要分页更新数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNeedPageUpdateData</span><span class="params">(<span class="keyword">boolean</span> needPageUpdateData)</span> </span>&#123;</span><br><span class="line">        isNeedPageUpdateData = needPageUpdateData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 分页更新数据的callback，使用方自己决定怎么更新数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPageUpdateDataCallback</span><span class="params">(PageUpdateDataCallback pageUpdateDataCallback)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pageUpdateDataCallback = pageUpdateDataCallback;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用方设置使用分页加载 分页加载的数量和分页监听</span></span><br><span class="line">recyclerview.setPageSize(PAGE_MAX_SIZE);</span><br><span class="line">recyclerview.setNeedPageUpdateData(<span class="keyword">true</span>);</span><br><span class="line">recyclerview.setPageUpdateDataCallback(<span class="keyword">new</span> ExpandableRecyclerView.PageUpdateDataCallback() &#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getPageData</span><span class="params">(ExpandableGroup group, <span class="keyword">int</span> page)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 加载下一页数据</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>改造完后，该项目基本实现了二级列表+动态更新+分页加载功能，算是一个比较完善的二级列表RecyclerView了，后续有时间继续研究一下看能否把RecyclerView的局部刷新功能也加上。最后，再次感谢<a href="https://github.com/thoughtbot/expandable-recycler-view" target="_blank" rel="noopener">thoughtbot/expandable-recycler-view</a>项目，也是这个项目封装的比较好，才能实现这些改造。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"><i class="fa fa-tag"></i> Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/22/TextView实现类型微信的全文功能/" rel="next" title="TextView实现类型微信的全文功能">
+                <i class="fa fa-chevron-left"></i> TextView实现类型微信的全文功能
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Mobius" />
+            
+              <p class="site-author-name" itemprop="name">Mobius</p>
+              <p class="site-description motion-element" itemprop="description">梦想总是要有的，万一实现了呢。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a rel="external nofollow" href="https://github.com/yangqiuyan" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-lg fa-fw fa-github"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a rel="external nofollow" href="mailto:qzyangcy@outlook.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-lg fa-fw fa-envelope"></i></a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-heart"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://moonshoter.github.io/" title="Moonshot" rel="external nofollow" target="_blank">Moonshot</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://kingsunday.github.io/" title="MrSunday" rel="external nofollow" target="_blank">MrSunday</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+          
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-实现动态变更数据"><span class="nav-number">1.</span> <span class="nav-text">1. 实现动态变更数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-实现类似ExpandableListview的列表悬浮在顶部效果-可分页加载RecyclerView"><span class="nav-number">2.</span> <span class="nav-text">2. 实现类似ExpandableListview的列表悬浮在顶部效果+可分页加载RecyclerView</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-ExpandableRecyclerView实现分页加载"><span class="nav-number">3.</span> <span class="nav-text">3. ExpandableRecyclerView实现分页加载</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" align="center">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mobius</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count" align="center">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      共
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位志同道合的伙伴到访
+    </span>
+  
+
+  
+    <span class="site-pv">
+      点击了
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: 'ccdf48aeb18d2ed345e3',
+          clientSecret: 'd55a77f399c464bd5e04f70199048444887549fe',
+          repo: 'yangqiuyan.github.io',
+          owner: 'yangqiuyan',
+          admin: ['yangqiuyan'],
+		  id: window.location.pathname.substring(0,50),
+          distractionFreeMode: true
+        })
+
+        gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("1suzDkGryRVBzbNYAOuGCh0C-gzGzoHsz", "779AdNstoS1VmmgENbXObfer");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

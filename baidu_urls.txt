@@ -1,5 +1,5 @@
+https://yangqiuyan.github.io/2019/09/27/recyclerview实现二级列表/
 https://yangqiuyan.github.io/2018/11/22/TextView实现类型微信的全文功能/
 https://yangqiuyan.github.io/2018/11/21/LinkMovementMethod/
 https://yangqiuyan.github.io/2018/10/09/Kotlin实战4-while和for循环/
 https://yangqiuyan.github.io/2018/07/06/Kotlin实战3-枚举和when/
-https://yangqiuyan.github.io/2018/05/18/Collections.sort()的使用/
