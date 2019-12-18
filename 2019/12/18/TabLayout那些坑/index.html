@@ -86,7 +86,7 @@
 
 
 
-  <meta name="keywords" content="Java," />
+  <meta name="keywords" content="TabLayout,抖动,坑,最小宽度" />
 
 
 
@@ -97,18 +97,18 @@
 
 
 
-<meta name="description" content="Java enum的用法 原文地址：Java enum的用法  主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始  用法常量123public enum Color&amp;#123;  RED,GREEN,BLANK,YELLOW&amp;#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先">
-<meta name="keywords" content="Java">
+<meta name="description" content="最近的项目中，要在一个模块当中，增加一个tab分类，每个分类展示不同的数据，理所当然的想到了用TabLayout+ViewPager+Fragment来实现，因此也遇到了一些TabLayout的坑，记录一下这些血泪史。。。">
+<meta name="keywords" content="TabLayout,抖动,坑,最小宽度">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java enum的用法">
-<meta property="og:url" content="https://yangqiuyan.github.io/2017/11/21/java-enum的用法/index.html">
+<meta property="og:title" content="TabLayout那些坑">
+<meta property="og:url" content="https://yangqiuyan.github.io/2019/12/18/TabLayout那些坑/index.html">
 <meta property="og:site_name" content="Mobius">
-<meta property="og:description" content="Java enum的用法 原文地址：Java enum的用法  主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始  用法常量123public enum Color&amp;#123;  RED,GREEN,BLANK,YELLOW&amp;#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先">
+<meta property="og:description" content="最近的项目中，要在一个模块当中，增加一个tab分类，每个分类展示不同的数据，理所当然的想到了用TabLayout+ViewPager+Fragment来实现，因此也遇到了一些TabLayout的坑，记录一下这些血泪史。。。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-30T02:12:38.000Z">
+<meta property="og:updated_time" content="2019-12-18T07:52:37.491Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="java enum的用法">
-<meta name="twitter:description" content="Java enum的用法 原文地址：Java enum的用法  主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始  用法常量123public enum Color&amp;#123;  RED,GREEN,BLANK,YELLOW&amp;#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先">
+<meta name="twitter:title" content="TabLayout那些坑">
+<meta name="twitter:description" content="最近的项目中，要在一个模块当中，增加一个tab分类，每个分类展示不同的数据，理所当然的想到了用TabLayout+ViewPager+Fragment来实现，因此也遇到了一些TabLayout的坑，记录一下这些血泪史。。。">
 
 
 
@@ -138,13 +138,13 @@
 
 
 
-  <link rel="canonical" href="https://yangqiuyan.github.io/2017/11/21/java-enum的用法/"/>
+  <link rel="canonical" href="https://yangqiuyan.github.io/2019/12/18/TabLayout那些坑/"/>
 
 
 
 
 
-  <title>java enum的用法 | Mobius</title>
+  <title>TabLayout那些坑 | Mobius</title>
   
 
 
@@ -261,7 +261,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://yangqiuyan.github.io/2017/11/21/java-enum的用法/">
+    <link itemprop="mainEntityOfPage" href="https://yangqiuyan.github.io/2019/12/18/TabLayout那些坑/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Mobius">
@@ -278,7 +278,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">java enum的用法</h2>
+          <h2 class="post-title" itemprop="name headline">TabLayout那些坑</h2>
         
 
         <div class="post-meta">
@@ -290,8 +290,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-21T00:00:00+08:00">
-                2017-11-21
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-18T14:02:48+08:00">
+                2019-12-18
               </time>
             
 
@@ -313,8 +313,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index">
-                    <span itemprop="name">Java</span>
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
                   </a>
                 </span>
 
@@ -330,7 +330,7 @@
 
           
           
-             <span id="/2017/11/21/java-enum的用法/" class="leancloud_visitors" data-flag-title="java enum的用法">
+             <span id="/2019/12/18/TabLayout那些坑/" class="leancloud_visitors" data-flag-title="TabLayout那些坑">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-thermometer-quarter"></i>
@@ -363,16 +363,27 @@
       
 
       
-        <h1 id="Java-enum的用法"><a href="#Java-enum的用法" class="headerlink" title="Java enum的用法"></a>Java enum的用法</h1><blockquote>
-<p>原文地址：<a href="http://www.cnblogs.com/happyPawpaw/archive/2013/04/09/3009553.html" target="_blank" rel="noopener">Java enum的用法</a></p>
+        <p>最近的项目中，要在一个模块当中，增加一个tab分类，每个分类展示不同的数据，理所当然的想到了用TabLayout+ViewPager+Fragment来实现，因此也遇到了一些TabLayout的坑，记录一下这些血泪史。。。</p>
+<a id="more"></a>
+<h4 id="1-TabLayout最小宽度"><a href="#1-TabLayout最小宽度" class="headerlink" title="1. TabLayout最小宽度"></a>1. TabLayout最小宽度</h4><p>因为分类一共有6个，屏幕宽度不够放下所有的tab，只能设置成滚动tab，每个tab设置左右边距13dp，很简单，TabLayout都有对应的属性可以设置。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">android.support.design.widget.TabLayout</span></span></span><br><span class="line"><span class="tag">	// 其他属性</span></span><br><span class="line"><span class="tag">	// 设置<span class="attr">padding</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabPaddingStart</span>=<span class="string">"13dp"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabPaddingEnd</span>=<span class="string">"13dp"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabMode</span>=<span class="string">"scrollable"</span></span></span><br><span class="line"><span class="tag">	/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>结果发现每个tab的宽度很大，边距比13dp还大，这肯定是逃不过UI小姐姐的眼睛的，小姐姐要求边距一定只能13dp。行，那就解决问题，换了几个padding值，感觉还是那么大，好像没什么变化，只好从TabLayout的源码入手。源码看着看着，发现在初始化的时候，有一个属性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.scrollableTabMinWidth = res.getDimensionPixelSize(dimen.design_tab_scrollable_min_width);</span><br></pre></td></tr></table></figure>
+<p>而这个design_tab_scrollable_min_width有72dp，所以就算文字只有1个字，也要保持72dp的宽度。但是这个属性好像不能修改，接着看源码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">getTabMinWidth</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.requestedTabMinWidth != -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.requestedTabMinWidth;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.mode == <span class="number">0</span> ? <span class="keyword">this</span>.scrollableTabMinWidth : <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看这个获取minWidth，在我们没有设置minWidth的时候，会判断模式是不是滚动模式，如果是，就取scrollableTabMinWidth，这就好办了，只要我们设置一个minWidth，就可以自己设置padding值了。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">android.support.design.widget.TabLayout</span></span></span><br><span class="line"><span class="tag">	// 其他属性</span></span><br><span class="line"><span class="tag">	// 设置<span class="attr">padding</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabMinWidth</span>=<span class="string">"0dp"</span> // 设置<span class="attr">minWidth</span>为<span class="attr">0</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabPaddingStart</span>=<span class="string">"13dp"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabPaddingEnd</span>=<span class="string">"13dp"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">app:tabMode</span>=<span class="string">"scrollable"</span></span></span><br><span class="line"><span class="tag">	/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>TabLayout的UI问题算是搞定了。</p>
+<h4 id="2-TabLayout抖动问题"><a href="#2-TabLayout抖动问题" class="headerlink" title="2. TabLayout抖动问题"></a>2. TabLayout抖动问题</h4><p>简单描述一下抖动问题，就是当TabLayout的tab数量超出屏幕并且可以滚动的时候，手动滚动TabLayout，选择一个在屏幕外的tab点击，TabLayout会先滚动回原来的tab，再滚动到点击的tab位置，出现类似抖动的现象，具体可以看<a href="https://juejin.im/entry/5a2c9ec5f265da43322780dd" target="_blank" rel="noopener">使用系统TabLayout的app快来修Bug</a>。</p>
+<p>按照上面那篇的文章进行更改，结果发现用反射找不到mPageChangeListener，不知道是不是Android9开始限制反射的原因，导致我的Android10手机无法用反射更改这个listener，那只能自己再找其他方法了。</p>
+<p>根据上面那个作者的思路，我们看pageChangeListener在哪里使用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TabLayout源码</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setupWithViewPager</span><span class="params">(@Nullable ViewPager viewPager, <span class="keyword">boolean</span> autoRefresh, <span class="keyword">boolean</span> implicitSetup)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.viewPager != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.pageChangeListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">this</span>.viewPager.removeOnPageChangeListener(<span class="keyword">this</span>.pageChangeListener);</span><br><span class="line">            &#125;</span><br><span class="line">          <span class="comment">// ...</span></span><br><span class="line">        &#125;</span><br><span class="line">       	<span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">if</span> (viewPager != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.viewPager = viewPager;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.pageChangeListener == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">this</span>.pageChangeListener = <span class="keyword">new</span> TabLayout.TabLayoutOnPageChangeListener(<span class="keyword">this</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">this</span>.pageChangeListener.reset();</span><br><span class="line">            viewPager.addOnPageChangeListener(<span class="keyword">this</span>.pageChangeListener);</span><br><span class="line">            <span class="comment">// ...</span></span><br><span class="line">        &#125;</span><br><span class="line">      	<span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，在TabLayout关联viewpager的时候，viewpager先移除已经存在的pageChangeListener，后面若pageChangeListener为null，就初始化一个，然后重新add进去。既然问题出在TabLayoutOnPageChangeListener而viewpager的addOnPageChangeListener是public接口，那我们可以修改viewpager的listener啊，遂更改：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 先清空所有的pagechangelistener，会移除tablayout添加进去的那个</span></span><br><span class="line">viewPager.clearOnPageChangeListeners();</span><br><span class="line"><span class="comment">// 添加自己的pagechangelistener，根据上面的反射的那个思路，如果不是手动触发的滚动，就不执行tablayout的滚动</span></span><br><span class="line">viewPager.addOnPageChangeListener(<span class="keyword">new</span> TabLayout.TabLayoutOnPageChangeListener(tablayout) &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">boolean</span> isTouchState;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageScrollStateChanged</span><span class="params">(<span class="keyword">int</span> state)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>.onPageScrollStateChanged(state);</span><br><span class="line">		<span class="keyword">if</span> (state == SCROLL_STATE_DRAGGING) &#123;</span><br><span class="line">			isTouchState = <span class="keyword">true</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (state == SCROLL_STATE_IDLE) &#123;</span><br><span class="line">			isTouchState = <span class="keyword">false</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageScrolled</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">float</span> positionOffset, <span class="keyword">int</span> positionOffsetPixels)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (isTouchState) &#123;</span><br><span class="line">			<span class="keyword">super</span>.onPageScrolled(position, positionOffset, positionOffsetPixels);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>TabLayout的抖动问题也算圆满解决了。</p>
+<blockquote>
+<p>还有一个Fragment切换，里面的recyclerbview页面变成空白的问题待解决，先记一下。</p>
 </blockquote>
-<h2 id="主要方法"><a href="#主要方法" class="headerlink" title="主要方法"></a>主要方法</h2><ul>
-<li>name()：获取定义的枚举值的名称</li>
-<li>ordinal()：获取枚举值的位置，位置从0开始</li>
-</ul>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Color&#123;</span><br><span class="line">  RED,GREEN,BLANK,YELLOW</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="向枚举中添加新方法"><a href="#向枚举中添加新方法" class="headerlink" title="向枚举中添加新方法"></a>向枚举中添加新方法</h3><p>如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先定义enum实例。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Color&#123;</span><br><span class="line">  RED(<span class="string">"红色"</span>,<span class="number">1</span>), GREEN(<span class="string">"绿色"</span>,<span class="number">2</span>), BLANK(<span class="string">"白色"</span>，<span class="number">3</span>), YELLO(<span class="string">"黄色"</span>, <span class="number">4</span>);</span><br><span class="line">  <span class="comment">// 成员变量</span></span><br><span class="line">  <span class="keyword">private</span> String name;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> index;</span><br><span class="line">  <span class="comment">// 构造方法</span></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">Color</span><span class="params">(String name, <span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">    <span class="keyword">this</span>.index = index;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 普通方法</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getName</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(Color c : Color.values()) &#123;</span><br><span class="line">      <span class="keyword">if</span>(c.getIndex() == index) &#123;</span><br><span class="line">        <span class="keyword">return</span> c.name;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 构造器</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> name;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getIndex</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> index;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIndex</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.index = index;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -390,7 +401,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+            <a href="/tags/Android/" rel="tag"><i class="fa fa-tag"></i> Android</a>
           
         </div>
       
@@ -403,8 +414,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/11/20/Kotlin实战2-类和属性/" rel="next" title="Kotlin实战2 — 类和属性">
-                <i class="fa fa-chevron-left"></i> Kotlin实战2 — 类和属性
+              <a href="/2019/09/27/recyclerview实现二级列表/" rel="next" title="recyclerview实现二级列表">
+                <i class="fa fa-chevron-left"></i> recyclerview实现二级列表
               </a>
             
           </div>
@@ -412,10 +423,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/11/28/android-string用法/" rel="prev" title="android string资源的用法">
-                android string资源的用法 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -591,7 +598,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Java-enum的用法"><span class="nav-number">1.</span> <span class="nav-text">Java enum的用法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主要方法"><span class="nav-number">1.1.</span> <span class="nav-text">主要方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用法"><span class="nav-number">1.2.</span> <span class="nav-text">用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#常量"><span class="nav-number">1.2.1.</span> <span class="nav-text">常量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#向枚举中添加新方法"><span class="nav-number">1.2.2.</span> <span class="nav-text">向枚举中添加新方法</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-TabLayout最小宽度"><span class="nav-number">1.</span> <span class="nav-text">1. TabLayout最小宽度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-TabLayout抖动问题"><span class="nav-number">2.</span> <span class="nav-text">2. TabLayout抖动问题</span></a></li></ol></div>
             
 
           </div>
