@@ -86,7 +86,7 @@
 
 
 
-  <meta name="keywords" content="Java," />
+  <meta name="keywords" content="RecyclerView,NestScrollView,复用" />
 
 
 
@@ -97,18 +97,23 @@
 
 
 
-<meta name="description" content="Java enum的用法 原文地址：Java enum的用法  主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始  用法常量123public enum Color&amp;#123;  RED,GREEN,BLANK,YELLOW&amp;#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先">
-<meta name="keywords" content="Java">
+<meta name="description" content="1.背景最近的项目需求中，有个不同于往常的交互需求:  页面分为上下2部分，上面文档类型，可以点击加载更多向下加载一页数据，加载完数据，加载更多会变成收起按钮，可以将列表收起到5个 item 长度。下面知识库类型，可以滑到底部，进行上拉加载更多。 2个部分是2个 http 接口返回的数据，数据之间无任何关联，在功能相对独立的基础上，思考了一下，决定用2个 RecyclerView 实现。 2.Ne">
+<meta name="keywords" content="RecyclerView,NestScrollView,复用">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java enum的用法">
-<meta property="og:url" content="https://yangqiuyan.github.io/2017/11/21/java-enum的用法/index.html">
+<meta property="og:title" content="记一次recyclerview的坑">
+<meta property="og:url" content="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/index.html">
 <meta property="og:site_name" content="Mobius">
-<meta property="og:description" content="Java enum的用法 原文地址：Java enum的用法  主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始  用法常量123public enum Color&amp;#123;  RED,GREEN,BLANK,YELLOW&amp;#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先">
+<meta property="og:description" content="1.背景最近的项目需求中，有个不同于往常的交互需求:  页面分为上下2部分，上面文档类型，可以点击加载更多向下加载一页数据，加载完数据，加载更多会变成收起按钮，可以将列表收起到5个 item 长度。下面知识库类型，可以滑到底部，进行上拉加载更多。 2个部分是2个 http 接口返回的数据，数据之间无任何关联，在功能相对独立的基础上，思考了一下，决定用2个 RecyclerView 实现。 2.Ne">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-30T02:12:38.000Z">
+<meta property="og:image" content="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/1.png">
+<meta property="og:image" content="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/runnable.jpeg">
+<meta property="og:image" content="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/gc.png">
+<meta property="og:image" content="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/trace.png">
+<meta property="og:updated_time" content="2021-11-22T11:04:53.979Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="java enum的用法">
-<meta name="twitter:description" content="Java enum的用法 原文地址：Java enum的用法  主要方法 name()：获取定义的枚举值的名称 ordinal()：获取枚举值的位置，位置从0开始  用法常量123public enum Color&amp;#123;  RED,GREEN,BLANK,YELLOW&amp;#125; 向枚举中添加新方法如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先">
+<meta name="twitter:title" content="记一次recyclerview的坑">
+<meta name="twitter:description" content="1.背景最近的项目需求中，有个不同于往常的交互需求:  页面分为上下2部分，上面文档类型，可以点击加载更多向下加载一页数据，加载完数据，加载更多会变成收起按钮，可以将列表收起到5个 item 长度。下面知识库类型，可以滑到底部，进行上拉加载更多。 2个部分是2个 http 接口返回的数据，数据之间无任何关联，在功能相对独立的基础上，思考了一下，决定用2个 RecyclerView 实现。 2.Ne">
+<meta name="twitter:image" content="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/1.png">
 
 
 
@@ -138,13 +143,13 @@
 
 
 
-  <link rel="canonical" href="https://yangqiuyan.github.io/2017/11/21/java-enum的用法/"/>
+  <link rel="canonical" href="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/"/>
 
 
 
 
 
-  <title>java enum的用法 | Mobius</title>
+  <title>记一次recyclerview的坑 | Mobius</title>
   
 
 
@@ -261,7 +266,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://yangqiuyan.github.io/2017/11/21/java-enum的用法/">
+    <link itemprop="mainEntityOfPage" href="https://yangqiuyan.github.io/2021/11/22/记一次RecyclerView的坑/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Mobius">
@@ -278,7 +283,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">java enum的用法</h2>
+          <h2 class="post-title" itemprop="name headline">记一次recyclerview的坑</h2>
         
 
         <div class="post-meta">
@@ -290,8 +295,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-21T00:00:00+08:00">
-                2017-11-21
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-11-22T11:41:18+08:00">
+                2021-11-22
               </time>
             
 
@@ -313,8 +318,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index">
-                    <span itemprop="name">Java</span>
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
                   </a>
                 </span>
 
@@ -330,7 +335,7 @@
 
           
           
-             <span id="/2017/11/21/java-enum的用法/" class="leancloud_visitors" data-flag-title="java enum的用法">
+             <span id="/2021/11/22/记一次RecyclerView的坑/" class="leancloud_visitors" data-flag-title="记一次recyclerview的坑">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-thermometer-quarter"></i>
@@ -363,16 +368,21 @@
       
 
       
-        <h1 id="Java-enum的用法"><a href="#Java-enum的用法" class="headerlink" title="Java enum的用法"></a>Java enum的用法</h1><blockquote>
-<p>原文地址：<a href="http://www.cnblogs.com/happyPawpaw/archive/2013/04/09/3009553.html" target="_blank" rel="noopener">Java enum的用法</a></p>
-</blockquote>
-<h2 id="主要方法"><a href="#主要方法" class="headerlink" title="主要方法"></a>主要方法</h2><ul>
-<li>name()：获取定义的枚举值的名称</li>
-<li>ordinal()：获取枚举值的位置，位置从0开始</li>
-</ul>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Color&#123;</span><br><span class="line">  RED,GREEN,BLANK,YELLOW</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="向枚举中添加新方法"><a href="#向枚举中添加新方法" class="headerlink" title="向枚举中添加新方法"></a>向枚举中添加新方法</h3><p>如果打算自定义自己的方法，必须在enum实例序列的最后一个添加一个分号，而且Java要求必须先定义enum实例。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Color&#123;</span><br><span class="line">  RED(<span class="string">"红色"</span>,<span class="number">1</span>), GREEN(<span class="string">"绿色"</span>,<span class="number">2</span>), BLANK(<span class="string">"白色"</span>，<span class="number">3</span>), YELLO(<span class="string">"黄色"</span>, <span class="number">4</span>);</span><br><span class="line">  <span class="comment">// 成员变量</span></span><br><span class="line">  <span class="keyword">private</span> String name;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> index;</span><br><span class="line">  <span class="comment">// 构造方法</span></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">Color</span><span class="params">(String name, <span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">    <span class="keyword">this</span>.index = index;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 普通方法</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getName</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(Color c : Color.values()) &#123;</span><br><span class="line">      <span class="keyword">if</span>(c.getIndex() == index) &#123;</span><br><span class="line">        <span class="keyword">return</span> c.name;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 构造器</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> name;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getIndex</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> index;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIndex</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.index = index;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h4 id="1-背景"><a href="#1-背景" class="headerlink" title="1.背景"></a>1.背景</h4><p>最近的项目需求中，有个不同于往常的交互需求:</p>
+<p><img src="/2021/11/22/记一次RecyclerView的坑/1.png" style="zoom:40%;"></p>
+<p>页面分为上下2部分，上面文档类型，可以点击加载更多向下加载一页数据，加载完数据，加载更多会变成收起按钮，可以将列表收起到5个 item 长度。下面知识库类型，可以滑到底部，进行上拉加载更多。</p>
+<p>2个部分是2个 http 接口返回的数据，数据之间无任何关联，在功能相对独立的基础上，思考了一下，决定用2个 RecyclerView 实现。</p>
+<h4 id="2-NestScrollView-嵌套-RecyclerView"><a href="#2-NestScrollView-嵌套-RecyclerView" class="headerlink" title="2.NestScrollView 嵌套 RecyclerView"></a>2.NestScrollView 嵌套 RecyclerView</h4><p>前期实现界面布局如下</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span><br><span class="line"><span class="tag">&lt;<span class="name">androidx.constraintlayout.widget.ConstraintLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:app</span>=<span class="string">"http://schemas.android.com/apk/res-auto"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">androidx.core.widget.NestedScrollView</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/recyclerview_container"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:background</span>=<span class="string">"@color/L_11"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:fillViewport</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:scrollbars</span>=<span class="string">"none"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:layout_constraintBottom_toBottomOf</span>=<span class="string">"parent"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:layout_constraintTop_toBottomOf</span>=<span class="string">"@id/divider"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">LinearLayout</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:orientation</span>=<span class="string">"vertical"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="tag">&lt;<span class="name">SearchRefreshListView</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:id</span>=<span class="string">"@+id/search_list"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">style</span>=<span class="string">"@style/globalSearchListView"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="tag">&lt;<span class="name">View</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:id</span>=<span class="string">"@+id/separator_view"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:layout_height</span>=<span class="string">"6dp"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:background</span>=<span class="string">"#F7F8FA"</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="tag">&lt;<span class="name">SearchRefreshListView</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:id</span>=<span class="string">"@+id/search_knowledge_ku_list"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">style</span>=<span class="string">"@style/globalSearchListView"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;/<span class="name">androidx.core.widget.NestedScrollView</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">androidx.constraintlayout.widget.ConstraintLayout</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>数据处理过程就略过了，一开始运行起来效果都很完美，交互也完全满足要求，但是在 qa 测试阶段，确出现了 ANR。。。根据 qa 描述，尝试复现 ANR 场景，发现只要加载20几页，大概600条左右数据的时候，稳定复现 ANR。。。</p>
+<h4 id="3-ANR-追踪"><a href="#3-ANR-追踪" class="headerlink" title="3.ANR 追踪"></a>3.ANR 追踪</h4><p>出现 ANR，第一反应就是看本地日志，通过 adb bugreport 取出本地 ANR 日志，发现每次 ANR 日志都不一样，</p>
+<p><img src="/2021/11/22/记一次RecyclerView的坑/runnable.jpeg" style="zoom:74%;"></p>
+<p><img src="/2021/11/22/记一次RecyclerView的坑/gc.png" style="zoom:50%;"></p>
+<p>下面的 ANR，能够看出是在等待 gc 的过程 出现 ANR，而且有本地的代码栈，猜想可能是 bindView 执行了耗时操作，review 了一下代码，发现都是简单的绘制，而且 item 数据集也小，不大可能是绘制问题。</p>
+<p>毫无头绪之下，想用 as 的 profiler 看一下应用的 cpu 和内存是否都正常，结果一看，发现每次加载内存持续要增长，一直没有下降过，于是转而观察 cpu 在每次下拉加载时都做了什么操作，一查发现，在 mian 线程里面adapter 的 bindview 确实是执行了很多次，才初步考虑到，可以是 RecyclerView 没有复用， 导致每个 item 都要绘制。</p>
+<p><img src="/2021/11/22/记一次RecyclerView的坑/trace.png" alt=""></p>
+<p>在 Adapter 的onBindViewHolder(@NonNull ViewHolder viewHolder, int i)中，打印出 i来验证这个想法，看到每次下来，从0开始的 i 都会被打印出来，证明 view 确实没被复用，所以 item 多时，会导致 ANR。顺着这个思路，在 google 上搜索的一下，看到一个文章 <a href="https://juejin.cn/post/6844903938395734024#heading-10" target="_blank" rel="noopener">实名反对《阿里巴巴Android开发手册》中NestedScrollView嵌套RecyclerView的用法</a>，坐实了 NestScrollView 嵌套 RecyclerView 的问题，至于为什么会复用失败，文章里面有相信的介绍，我就多说了。最终去掉 NestScrollView 嵌套，直接使用 RecyclerView 的多种 type，实现了上述的交互效果。</p>
+<h4 id="4-总结"><a href="#4-总结" class="headerlink" title="4.总结"></a>4.总结</h4><p>这是一个小白，第一次尝试解 ANR 问题，以前遇到 ANR 都是看着日志文件无从下手，通过此次，学习到了一个看 ANR 日志，看 profiler 信息的技能，虽然用了很长时间，也算是有所收获。（这里还要感谢某人工作繁忙的时候还要教我如果看追踪 ANR，(ღ˘⌣˘ღ)..）</p>
 
       
     </div>
@@ -390,7 +400,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+            <a href="/tags/Android/" rel="tag"><i class="fa fa-tag"></i> Android</a>
           
         </div>
       
@@ -403,8 +413,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/11/20/Kotlin实战2-类和属性/" rel="next" title="Kotlin实战2 — 类和属性">
-                <i class="fa fa-chevron-left"></i> Kotlin实战2 — 类和属性
+              <a href="/2020/05/07/学习1/" rel="next" title="学习1">
+                <i class="fa fa-chevron-left"></i> 学习1
               </a>
             
           </div>
@@ -412,10 +422,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/11/28/android-string用法/" rel="prev" title="android string资源的用法">
-                android string资源的用法 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -591,7 +597,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Java-enum的用法"><span class="nav-number">1.</span> <span class="nav-text">Java enum的用法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主要方法"><span class="nav-number">1.1.</span> <span class="nav-text">主要方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用法"><span class="nav-number">1.2.</span> <span class="nav-text">用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#常量"><span class="nav-number">1.2.1.</span> <span class="nav-text">常量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#向枚举中添加新方法"><span class="nav-number">1.2.2.</span> <span class="nav-text">向枚举中添加新方法</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-背景"><span class="nav-number">1.</span> <span class="nav-text">1.背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-NestScrollView-嵌套-RecyclerView"><span class="nav-number">2.</span> <span class="nav-text">2.NestScrollView 嵌套 RecyclerView</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-ANR-追踪"><span class="nav-number">3.</span> <span class="nav-text">3.ANR 追踪</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-总结"><span class="nav-number">4.</span> <span class="nav-text">4.总结</span></a></li></ol></div>
             
 
           </div>
